@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP 客户端 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link">快速开始</a>
+                <a href="server.html" class="nav-link">服务启动器</a>
+                <a href="config.html" class="nav-link">配置管理</a>
+                <a href="resource.html" class="nav-link">资源管理</a>
+                <a href="http.html" class="nav-link active">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link">限流</a>
+                <a href="cluster_lock.html" class="nav-link">分布式锁</a>
+                <a href="scheduler.html" class="nav-link">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>HTTP 客户端</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>HTTP 客户端</h2>
+                
+                <p>
+                    Linglong Web 提供了一个基于 httpx 增强的 HTTP 客户端，具有用于分布式追踪的
+                    自动 request-id 传播功能。它简化了向外部服务发起 HTTP 请求的过程，同时保持了可追踪性。
+                </p>
+                
+                <h3>为什么需要 Request-Id 传播？</h3>
+                
+                <div class="card">
+                    <p>在微服务架构中，跨服务边界追踪请求至关重要：</p>
+                    <ul>
+                        <li><strong>分布式追踪</strong> - 关联跨服务的日志</li>
+                        <li><strong>调试</strong> - 快速找到问题的根本原因</li>
+                        <li><strong>审计追踪</strong> - 追踪完整的请求流程</li>
+                    </ul>
+                    <p style="margin-top: 16px;">
+                        HTTP 客户端自动从传入请求中提取 request-id 并将其传播到下游服务。
+                    </p>
+                </div>
+                
+                <h3>核心功能</h3>
+                
+                <ul>
+                    <li><strong>Request-Id 传播</strong> - 自动传递 X-Request-Id 头</li>
+                    <li><strong>连接池</strong> - 重用连接以提高性能</li>
+                    <li><strong>超时管理</strong> - 可配置不同操作的超时时间</li>
+                    <li><strong>重试逻辑</strong> - 自动重试临时失败</li>
+                </ul>
+                
+                <h3>API 参考</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>方法</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>get(url, **kwargs)</code></td>
+                            <td>发送 GET 请求</td>
+                        </tr>
+                        <tr>
+                            <td><code>post(url, **kwargs)</code></td>
+                            <td>发送 POST 请求</td>
+                        </tr>
+                        <tr>
+                            <td><code>put(url, **kwargs)</code></td>
+                            <td>发送 PUT 请求</td>
+                        </tr>
+                        <tr>
+                            <td><code>delete(url, **kwargs)</code></td>
+                            <td>发送 DELETE 请求</td>
+                        </tr>
+                        <tr>
+                            <td><code>patch(url, **kwargs)</code></td>
+                            <td>发送 PATCH 请求</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>使用示例</h3>
+                
+                <h4>基础用法</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.http <span class="token-keyword">import</span> LinglongHttpClient
+
+client = <span class="token-class">LinglongHttpClient</span>(base_url=<span class="token-string">"https://api.example.com"</span>)
+
+<span class="token-comment"># GET 请求</span>
+response = <span class="token-keyword">await</span> client.<span class="token-function">get</span>(<span class="token-string">"/users"</span>)
+data = response.<span class="token-function">json</span>()
+
+<span class="token-comment"># POST 请求</span>
+response = <span class="token-keyword">await</span> client.<span class="token-function">post</span>(
+    <span class="token-string">"/users"</span>,
+    json={<span class="token-string">"name"</span>: <span class="token-string">"John"</span>}
+)</code></pre>
+                </div>
+                
+                <h4>配合请求上下文使用</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.http <span class="token-keyword">import</span> LinglongHttpClient
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> RequestContext
+
+<span class="token-comment"># Request-Id 会自动传播</span>
+client = <span class="token-class">LinglongHttpClient</span>(base_url=<span class="token-string">"https://api.example.com"</span>)
+
+<span class="token-keyword">async def</span> <span class="token-function">call_service</span>():
+    request_id = RequestContext.<span class="token-function">request_id</span>  <span class="token-comment"># 自动填充</span>
+    response = <span class="token-keyword">await</span> client.<span class="token-function">get</span>(<span class="token-string">"/data"</span>)
+    <span class="token-keyword">return</span> response.<span class="token-function">json</span>()</code></pre>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'http.html' : '../http.html';
+        }
+    </script>
+</body>
+</html>

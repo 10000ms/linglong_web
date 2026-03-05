@@ -1,0 +1,14 @@
+global-exclude __pycache__ *.py[cod] *.pyo *.pyd .DS_Store
+prune .pytest_cache
+prune .mypy_cache
+prune .ruff_cache
+prune .venv
+prune build
+prune dist
+exclude .coverage
+exclude coverage.xml
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include linglong_web *.py
+recursive-include linglong_web *.typed

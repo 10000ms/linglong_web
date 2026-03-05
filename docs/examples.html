@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examples - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link active">Examples</a>
+            </div>
+        </aside>
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>Examples</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            <main>
+                <h2>Examples</h2>
+                <p>Complete examples showing how to use Linglong Web in real applications.</p>
+                
+                <h3>REST API with Full Features</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">import</span> asyncio
+<span class="token-keyword">from</span> fastapi <span class="token-keyword">import</span> APIRouter
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> (
+    LinglongAppServer,
+    LinglongConfigBase,
+    init_config,
+    init_resources,
+    get_db,
+    get_redis,
+)
+<span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> cacher, limiter
+<span class="token-keyword">from</span> linglong_web.http <span class="token-keyword">import</span> LinglongHttpClient
+
+<span class="token-comment"># 1. Define Configuration</span>
+<span class="token-keyword">class</span> <span class="token-class">ProdConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">False</span>
+    SERVICE_NAME = <span class="token-string">"my-api"</span>
+    PGSQL_HOST = <span class="token-string">"postgres.internal"</span>
+    REDIS_HOST = <span class="token-string">"redis.internal"</span>
+
+<span class="token-comment"># 2. Initialize</span>
+<span class="token-keyword">async def</span> <span class="token-function">main</span>():
+    <span class="token-function">init_config</span>({<span class="token-string">"prod"</span>: ProdConfig}, mode_name=<span class="token-string">"prod"</span>)
+    <span class="token-keyword">await</span> <span class="token-function">init_resources</span>(
+        db_config={<span class="token-string">"host"</span>: <span class="token-string">"postgres.internal"</span>, <span class="token-string">"database"</span>: <span class="token-string">"mydb"</span>},
+        redis_config={<span class="token-string">"host"</span>: <span class="token-string">"redis.internal"</span>}
+    )
+
+    <span class="token-comment"># 3. Create Router</span>
+    router = <span class="token-class">APIRouter</span>()
+
+    <span class="token-keyword">@</span>router.<span class="token-function">get</span>(<span class="token-string">"/users/{user_id}"</span>)
+    <span class="token-keyword">@</span>cacher(ttl=<span class="token-number">60</span>)
+    <span class="token-keyword">@</span>limiter(max_calls=<span class="token-number">100</span>, period=<span class="token-number">60</span>)
+    <span class="token-keyword">async def</span> <span class="token-function">get_user</span>(user_id: int):
+        db = <span class="token-keyword">await</span> <span class="token-function">get_db</span>()
+        <span class="token-keyword">return await</span> db.<span class="token-function">fetchone</span>(
+            <span class="token-string">"SELECT * FROM users WHERE id = $1"</span>, user_id
+        )
+
+    <span class="token-comment"># 4. Start Server</span>
+    server = <span class="token-class">LinglongAppServer</span>()
+    <span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+        service_name=<span class="token-string">"my-api"</span>,
+        router=router,
+        config_dict={<span class="token-string">"prod"</span>: ProdConfig},
+    )
+    <span class="token-keyword">await</span> server.<span class="token-function">start</span>(host=<span class="token-string">"0.0.0.0"</span>, port=<span class="token-number">8080</span>)
+
+asyncio.<span class="token-function">run</span>(<span class="token-function">main</span>())</code></pre>
+                </div>
+
+                <h3>Microservice with HTTP Client</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.http <span class="token-keyword">import</span> LinglongHttpClient
+
+client = <span class="token-class">LinglongHttpClient</span>(
+    base_url=<span class="token-string">"https://api.example.com"</span>,
+    timeout=<span class="token-number">30</span>
+)
+
+<span class="token-keyword">async def</span> <span class="token-function">fetch_user_data</span>(user_id: int):
+    <span class="token-comment"># Request-Id is automatically propagated</span>
+    response = <span class="token-keyword">await</span> client.<span class="token-function">get</span>(
+        <span class="token-string">f"/users/{user_id}"</span>,
+        headers={<span class="token-string">"X-Custom-Header"</span>: <span class="token-string">"value"</span>}
+    )
+    <span class="token-keyword">return</span> response.<span class="token-function">json</span>()</code></pre>
+                </div>
+
+                <h3>Scheduled Background Task</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> aioclock <span class="token-keyword">import</span> Aioclock
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> get_redis
+
+app = <span class="token-class">Aioclock</span>()
+
+<span class="token-keyword">@</span>app.<span class="token-function">cron</span>(<span class="token-string">"0 2 * * *"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">daily_cleanup</span>():
+    redis = <span class="token-keyword">await</span> <span class="token-function">get_redis</span>()
+    <span class="token-keyword">await</span> redis.<span class="token-function">delete</span>(<span class="token-string">"cache:expired:*"</span>)
+    <span class="token-keyword">print</span>(<span class="token-string">"Daily cleanup completed"</span>)</code></pre>
+                </div>
+            </main>
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    <script>
+        function setLang(lang) { window.location.href = lang === 'zh' ? 'zh/examples.html' : 'examples.html'; }
+    </script>
+</body>
+</html>

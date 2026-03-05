@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资源管理 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link">快速开始</a>
+                <a href="server.html" class="nav-link">服务启动器</a>
+                <a href="config.html" class="nav-link">配置管理</a>
+                <a href="resource.html" class="nav-link active">资源管理</a>
+                <a href="http.html" class="nav-link">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link">限流</a>
+                <a href="cluster_lock.html" class="nav-link">分布式锁</a>
+                <a href="scheduler.html" class="nav-link">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>资源管理</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>资源管理</h2>
+                
+                <p>
+                    Linglong Web 提供了统一的资源管理，用于数据库、缓存和消息队列。
+                    它自动处理连接池、生命周期管理和优雅停机。
+                </p>
+                
+                <h3>为什么需要统一资源管理？</h3>
+                
+                <div class="card">
+                    <p>在生产环境中管理多个资源连接很复杂：</p>
+                    <ul>
+                        <li><strong>连接池</strong> - 重用连接以提高性能</li>
+                        <li><strong>生命周期管理</strong> - 自动初始化和清理</li>
+                        <li><strong>优雅停机</strong> - 确保关闭期间不会丢失请求</li>
+                        <li><strong>类型安全</strong> - 完整的类型提示，支持 IDE</li>
+                    </ul>
+                </div>
+                
+                <h3>支持的资源</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>资源</th>
+                            <th>库</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PostgreSQL</td>
+                            <td>asyncpg</td>
+                            <td>异步 PostgreSQL 数据库驱动</td>
+                        </tr>
+                        <tr>
+                            <td>Redis</td>
+                            <td>redis.asyncio</td>
+                            <td>异步 Redis 客户端</td>
+                        </tr>
+                        <tr>
+                            <td>MySQL</td>
+                            <td>aiomysql</td>
+                            <td>异步 MySQL 数据库驱动</td>
+                        </tr>
+                        <tr>
+                            <td>RabbitMQ</td>
+                            <td>aio-pika</td>
+                            <td>异步 RabbitMQ 客户端</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>API 参考</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>函数</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>init_resources(db_config, redis_config, mq_config)</code></td>
+                            <td>初始化所有配置的资源</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_db()</code></td>
+                            <td>获取数据库连接池</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_redis()</code></td>
+                            <td>获取 Redis 连接</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_mq()</code></td>
+                            <td>获取消息队列连接</td>
+                        </tr>
+                        <tr>
+                            <td><code>close_resources()</code></td>
+                            <td>关闭所有资源连接</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>使用示例</h3>
+                
+                <h4>初始化资源</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> init_resources, get_db, get_redis
+
+<span class="token-keyword">async def</span> <span class="token-function">init</span>():
+    <span class="token-keyword">await</span> <span class="token-function">init_resources</span>(
+        db_config={
+            <span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>,
+            <span class="token-string">"port"</span>: <span class="token-number">5432</span>,
+            <span class="token-string">"user"</span>: <span class="token-string">"postgres"</span>,
+            <span class="token-string">"password"</span>: <span class="token-string">"password"</span>,
+            <span class="token-string">"database"</span>: <span class="token-string">"mydb"</span>,
+        },
+        redis_config={
+            <span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>,
+            <span class="token-string">"port"</span>: <span class="token-number">6379</span>,
+        }
+    )</code></pre>
+                </div>
+                
+                <h4>使用资源</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> get_db, get_redis
+
+<span class="token-keyword">async def</span> <span class="token-function">query_users</span>():
+    db = <span class="token-keyword">await</span> <span class="token-function">get_db</span>()
+    <span class="token-keyword">return await</span> db.<span class="token-function">fetch</span>(<span class="token-string">"SELECT * FROM users"</span>)
+
+<span class="token-keyword">async def</span> <span class="token-function">cache_get</span>(key: str):
+    redis = <span class="token-keyword">await</span> <span class="token-function">get_redis</span>()
+    <span class="token-keyword">return await</span> redis.<span class="token-function">get</span>(key)</code></pre>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'resource.html' : '../resource.html';
+        }
+    </script>
+</body>
+</html>

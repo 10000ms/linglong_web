@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link active">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>LinglongAppServer</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>Server</h2>
+                
+                <p>
+                    <code>LinglongAppServer</code> is the core server bootstrap class that handles initialization, 
+                    middleware setup, extension hooks, and graceful shutdown. It wraps FastAPI and provides 
+                    additional enterprise-grade features.
+                </p>
+                
+                <h3>Why Do We Need LinglongAppServer?</h3>
+                
+                <div class="card">
+                    <p>While FastAPI provides an excellent async framework, building production-ready services requires additional boilerplate code:</p>
+                    <ul>
+                        <li>Setting up CORS, logging, and error handling middleware</li>
+                        <li>Integrating with configuration systems</li>
+                        <li>Managing resource lifecycle (databases, Redis, etc.)</li>
+                        <li>Handling graceful shutdown</li>
+                        <li>Adding server extensions for custom hooks</li>
+                    </ul>
+                    <p style="margin-top: 16px;">
+                        <code>LinglongAppServer</code> encapsulates all these concerns into a simple, unified API, 
+                        so you can focus on your business logic.
+                    </p>
+                </div>
+                
+                <h3>How It Works</h3>
+                
+                <div class="card">
+                    <h4>Initialization Flow</h4>
+                    <pre><code><span class="token-number">1</span>. Create server instance
+<span class="token-number">2</span>. Initialize with config, router, and extensions
+<span class="token-number">3</span>. Server applies middleware (CORS, logging, error handling)
+<span class="token-number">4</span>. Server registers routes from router
+<span class="token-number">5</span>. Server starts listening on specified host/port</code></pre>
+                </div>
+                
+                <h3>API Reference</h3>
+                
+                <h4>LinglongAppServer</h4>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>initialize()</code></td>
+                            <td>Initialize server with config, router, and extensions</td>
+                        </tr>
+                        <tr>
+                            <td><code>start()</code></td>
+                            <td>Start the server on specified host and port</td>
+                        </tr>
+                        <tr>
+                            <td><code>stop()</code></td>
+                            <td>Gracefully stop the server</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_app()</code></td>
+                            <td>Get the underlying FastAPI app instance</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>initialize() Parameters</h4>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>service_name</code></td>
+                            <td><code>str</code></td>
+                            <td>Yes</td>
+                            <td>Name of the service</td>
+                        </tr>
+                        <tr>
+                            <td><code>router</code></td>
+                            <td><code>APIRouter</code></td>
+                            <td>Yes</td>
+                            <td>FastAPI router with registered routes</td>
+                        </tr>
+                        <tr>
+                            <td><code>config_dict</code></td>
+                            <td><code>Dict[str, type]</code></td>
+                            <td>Yes</td>
+                            <td>Configuration classes keyed by environment</td>
+                        </tr>
+                        <tr>
+                            <td><code>extensions</code></td>
+                            <td><code>List[BaseServerExtension]</code></td>
+                            <td>No</td>
+                            <td>List of server extensions for hooks</td>
+                        </tr>
+                        <tr>
+                            <td><code>title</code></td>
+                            <td><code>str</code></td>
+                            <td>No</td>
+                            <td>API documentation title</td>
+                        </tr>
+                        <tr>
+                            <td><code>version</code></td>
+                            <td><code>str</code></td>
+                            <td>No</td>
+                            <td>API documentation version</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Usage Examples</h3>
+                
+                <h4>Basic Usage</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">import</span> asyncio
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> (
+    LinglongAppServer,
+    ServerRouter,
+    init_config,
+    init_resources,
+)
+
+<span class="token-keyword">async def</span> <span class="token-function">main</span>():
+    <span class="token-comment"># Initialize configuration</span>
+    <span class="token-function">init_config</span>({<span class="token-string">"dev"</span>: DevConfig}, mode_name=<span class="token-string">"dev"</span>)
+    
+    <span class="token-comment"># Initialize resources</span>
+    <span class="token-keyword">await</span> <span class="token-function">init_resources</span>(db_config={...}, redis_config={...})
+    
+    <span class="token-comment"># Create router</span>
+    router = <span class="token-class">ServerRouter</span>()
+    <span class="token-keyword">@</span>router.<span class="token-function">route</span>(<span class="token-string">"/health"</span>, method=<span class="token-string">"GET"</span>)
+    <span class="token-keyword">async def</span> <span class="token-function">health</span>(request):
+        <span class="token-keyword">return</span> {<span class="token-string">"status"</span>: <span class="token-string">"ok"</span>}
+    
+    <span class="token-comment"># Create and initialize server</span>
+    server = <span class="token-class">LinglongAppServer</span>()
+    <span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+        service_name=<span class="token-string">"my-api"</span>,
+        router=router.<span class="token-function">get_router</span>(),
+        config_dict={<span class="token-string">"dev"</span>: DevConfig},
+    )
+    
+    <span class="token-comment"># Start server</span>
+    <span class="token-keyword">await</span> server.<span class="token-function">start</span>(host=<span class="token-string">"0.0.0.0"</span>, port=<span class="token-number">8080</span>)
+
+asyncio.<span class="token-function">run</span>(<span class="token-function">main</span>())</code></pre>
+                </div>
+                
+                <h4>With Server Extensions</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> BaseServerExtension
+
+<span class="token-keyword">class</span> <span class="token-class">MyBaseServerExtension):
+Extension</span>(    <span class="token-keyword">async def</span> <span class="token-function">on_startup</span>(self, app):
+        <span class="token-comment"># Called before server starts</span>
+        <span class="token-keyword">print</span>(<span class="token-string">"Server starting..."</span>)
+    
+    <span class="token-keyword">async def</span> <span class="token-function">on_shutdown</span>(self, app):
+        <span class="token-comment"># Called before server stops</span>
+        <span class="token-keyword">print</span>(<span class="token-string">"Server stopping..."</span>)
+
+server = <span class="token-class">LinglongAppServer</span>()
+<span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+    service_name=<span class="token-string">"my-api"</span>,
+    router=router.<span class="token-function">get_router</span>(),
+    config_dict={<span class="token-string">"dev"</span>: DevConfig},
+    extensions=[<span class="token-class">MyExtension</span>()],
+)</code></pre>
+                </div>
+                
+                <h4>With Swagger UI</h4>
+                
+                <div class="card">
+                    <pre><code>server = <span class="token-class">LinglongAppServer</span>()
+<span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+    service_name=<span class="token-string">"my-api"</span>,
+    router=router.<span class="token-function">get_router</span>(),
+    config_dict={<span class="token-string">"dev"</span>: DevConfig},
+    title=<span class="token-string">"My API Documentation"</span>,
+    version=<span class="token-string">"1.0.0"</span>,
+)
+
+<span class="token-comment"># Swagger UI available at /docs</span>
+<span class="token-comment"># ReDoc available at /redoc</span></code></pre>
+                </div>
+                
+                <h3>Graceful Shutdown</h3>
+                
+                <div class="card">
+                    <p><code>LinglongAppServer</code> handles graceful shutdown automatically:</p>
+                    <ol>
+                        <li>Receives SIGTERM/SIGINT signal</li>
+                        <li>Stops accepting new connections</li>
+                        <li>Calls <code>on_shutdown</code> extensions</li>
+                        <li>Closes all resources (databases, Redis, etc.)</li>
+                        <li>Exits cleanly</li>
+                    </ol>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'zh/server.html' : 'server.html';
+        }
+    </script>
+</body>
+</html>

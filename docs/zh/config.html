@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置管理 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link">快速开始</a>
+                <a href="server.html" class="nav-link">服务启动器</a>
+                <a href="config.html" class="nav-link active">配置管理</a>
+                <a href="resource.html" class="nav-link">资源管理</a>
+                <a href="http.html" class="nav-link">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link">限流</a>
+                <a href="cluster_lock.html" class="nav-link">分布式锁</a>
+                <a href="scheduler.html" class="nav-link">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>配置管理</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>配置管理</h2>
+                
+                <p>
+                    Linglong Web 提供了强大的配置系统，支持热加载。您可以定义不同环境的配置类，
+                    并轻松地在它们之间切换。
+                </p>
+                
+                <h3>为什么需要热加载？</h3>
+                
+                <div class="card">
+                    <p>在生产环境中，能够在不重启服务的情况下更新配置至关重要：</p>
+                    <ul>
+                        <li><strong>零停机</strong> - 更新设置而不中断用户</li>
+                        <li><strong>动态调优</strong> - 实时调整限流、缓存 TTL 等</li>
+                        <li><strong>运维灵活性</strong> - 修复配置错误无需重新部署</li>
+                    </ul>
+                </div>
+                
+                <h3>核心组件</h3>
+                
+                <h4>LinglongConfigBase</h4>
+                
+                <div class="card">
+                    <p>提供所有设置默认值的基配置类：</p>
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfigBase
+
+<span class="token-keyword">class</span> <span class="token-class">DevConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">True</span>
+    SERVICE_NAME = <span class="token-string">"my-api"</span>
+    PGSQL_HOST = <span class="token-string">"localhost"</span>
+    REDIS_HOST = <span class="token-string">"localhost"</span></code></pre>
+                </div>
+                
+                <h4>LinglongConfig (LinglongConfigProxy)</h4>
+                
+                <div class="card">
+                    <p>运行时访问配置值的单例代理：</p>
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfig
+
+<span class="token-comment"># 访问配置值</span>
+service_name = LinglongConfig.SERVICE_NAME
+debug_mode = LinglongConfig.DEBUG</code></pre>
+                </div>
+                
+                <h3>API 参考</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>方法/属性</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>init_config(config_dict, mode_name)</code></td>
+                            <td>使用环境特定的类初始化配置</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.apply_updates(updates)</code></td>
+                            <td>应用运行时配置更新（热加载）</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.snapshot()</code></td>
+                            <td>获取当前配置值的快照</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.reset()</code></td>
+                            <td>重置配置为初始状态</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.load_from_dict(dict)</code></td>
+                            <td>从字典加载配置</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>配置选项</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>选项</th>
+                            <th>类型</th>
+                            <th>默认值</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>DEBUG</code></td>
+                            <td><code>bool</code></td>
+                            <td><code>False</code></td>
+                            <td>启用调试模式</td>
+                        </tr>
+                        <tr>
+                            <td><code>SERVICE_NAME</code></td>
+                            <td><code>str</code></td>
+                            <td><code>""</code></td>
+                            <td>用于日志的服务名称</td>
+                        </tr>
+                        <tr>
+                            <td><code>PGSQL_*</code></td>
+                            <td><code>str</code></td>
+                            <td><code>...</code></td>
+                            <td>PostgreSQL 连接设置</td>
+                        </tr>
+                        <tr>
+                            <td><code>REDIS_*</code></td>
+                            <td><code>str/int</code></td>
+                            <td><code>...</code></td>
+                            <td>Redis 连接设置</td>
+                        </tr>
+                        <tr>
+                            <td><code>CORS_ALLOWED_ORIGINS</code></td>
+                            <td><code>List[str]</code></td>
+                            <td><code>["http://localhost"]</code></td>
+                            <td>CORS 允许的来源</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>使用示例</h3>
+                
+                <h4>多环境配置</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfigBase, init_config
+
+<span class="token-keyword">class</span> <span class="token-class">DevConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">True</span>
+    PGSQL_HOST = <span class="token-string">"localhost"</span>
+
+<span class="token-keyword">class</span> <span class="token-class">ProdConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">False</span>
+    PGSQL_HOST = <span class="token-string">"postgres.internal"</span>
+
+<span class="token-comment"># 使用环境配置初始化</span>
+init_config({
+    <span class="token-string">"dev"</span>: DevConfig,
+    <span class="token-string">"prod"</span>: ProdConfig,
+}, mode_name=<span class="token-string">"dev"</span>)</code></pre>
+                </div>
+                
+                <h4>使用 YAML 进行热加载</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">import</span> yaml
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfig
+
+<span class="token-comment"># 从 YAML 文件加载</span>
+<span class="token-keyword">with</span> <span class="token-function">open</span>(<span class="token-string">"config/prod.yaml"</span>) <span class="token-keyword">as</span> f:
+    settings = yaml.<span class="token-function">safe_load</span>(f)
+
+<span class="token-comment"># 无需重启应用更新</span>
+LinglongConfig.<span class="token-function">apply_updates</span>(settings)</code></pre>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'config.html' : '../config.html';
+        }
+    </script>
+</body>
+</html>

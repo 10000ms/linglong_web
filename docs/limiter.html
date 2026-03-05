@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limiter - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link active">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>Limiter</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            <main>
+                <h2>Rate Limiter</h2>
+                <p>The <code>@limiter</code> decorator provides Redis-based rate limiting for API endpoints. It prevents abuse and ensures fair resource usage.</p>
+                <h3>Why Rate Limiting?</h3>
+                <div class="card">
+                    <ul>
+                        <li><strong>Prevent Abuse</strong> - Stop DoS attacks and excessive requests</li>
+                        <li><strong>Fair Usage</strong> - Ensure all users get equal access</li>
+                        <li><strong>Cost Control</strong> - Prevent unexpected resource consumption</li>
+                        <li><strong>Service Stability</strong> - Protect downstream services</li>
+                    </ul>
+                </div>
+                <h3>How It Works</h3>
+                <div class="card">
+                    <ol>
+                        <li>Uses Redis sliding window algorithm</li>
+                        <li>Tracks requests per key (IP, user ID, or custom)</li>
+                        <li>Returns 429 when limit exceeded</li>
+                        <li>Configurable window size and max requests</li>
+                    </ol>
+                </div>
+                <h3>Parameters</h3>
+                <table>
+                    <thead>
+                        <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>max_calls</code></td><td><code>int</code></td><td>Yes</td><td>Maximum requests allowed in window</td></tr>
+                        <tr><td><code>period</code></td><td><code>int</code></td><td>Yes</td><td>Time window in seconds</td></tr>
+                        <tr><td><code>key_builder</code></td><td><code>Callable</code></td><td>No</td><td>Custom function to build rate limit key</td></tr>
+                    </tbody>
+                </table>
+                <h3>Usage Example</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> limiter
+
+<span class="token-comment"># Allow 100 requests per 60 seconds</span>
+<span class="token-keyword">@</span>limiter(max_calls=<span class="token-number">100</span>, period=<span class="token-number">60</span>)
+<span class="token-keyword">async def</span> <span class="token-function">api_endpoint</span>(request):
+    <span class="token-keyword">return</span> {<span class="token-string">"status"</span>: <span class="token-string">"ok"</span>}</code></pre>
+                </div>
+            </main>
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    <script>
+        function setLang(lang) { window.location.href = lang === 'zh' ? 'zh/limiter.html' : 'limiter.html'; }
+    </script>
+</body>
+</html>

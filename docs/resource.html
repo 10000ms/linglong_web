@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link active">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>Resource</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>Resource Management</h2>
+                
+                <p>
+                    Linglong Web provides unified resource management for databases, caches, 
+                    and message queues. It handles connection pooling, lifecycle management, 
+                    and graceful shutdown automatically.
+                </p>
+                
+                <h3>Why Unified Resource Management?</h3>
+                
+                <div class="card">
+                    <p>Managing multiple resource connections in production environments is complex:</p>
+                    <ul>
+                        <li><strong>Connection Pooling</strong> - Reuse connections for better performance</li>
+                        <li><strong>Lifecycle Management</strong> - Automatic initialization and cleanup</li>
+                        <li><strong>Graceful Shutdown</strong> - Ensure no requests are lost during shutdown</li>
+                        <li><strong>Type Safety</strong> - Full type hints for IDE support</li>
+                    </ul>
+                </div>
+                
+                <h3>Supported Resources</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Library</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PostgreSQL</td>
+                            <td>asyncpg</td>
+                            <td>Async PostgreSQL database driver</td>
+                        </tr>
+                        <tr>
+                            <td>Redis</td>
+                            <td>redis.asyncio</td>
+                            <td>Async Redis client</td>
+                        </tr>
+                        <tr>
+                            <td>MySQL</td>
+                            <td>aiomysql</td>
+                            <td>Async MySQL database driver</td>
+                        </tr>
+                        <tr>
+                            <td>RabbitMQ</td>
+                            <td>aio-pika</td>
+                            <td>Async RabbitMQ client</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>API Reference</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Function</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>init_resources(db_config, redis_config, mq_config)</code></td>
+                            <td>Initialize all configured resources</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_db()</code></td>
+                            <td>Get the database connection pool</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_redis()</code></td>
+                            <td>Get the Redis connection</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_mq()</code></td>
+                            <td>Get the message queue connection</td>
+                        </tr>
+                        <tr>
+                            <td><code>close_resources()</code></td>
+                            <td>Close all resource connections</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Usage Examples</h3>
+                
+                <h4>Initializing Resources</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> init_resources, get_db, get_redis
+
+<span class="token-keyword">async def</span> <span class="token-function">init</span>():
+    <span class="token-keyword">await</span> <span class="token-function">init_resources</span>(
+        db_config={
+            <span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>,
+            <span class="token-string">"port"</span>: <span class="token-number">5432</span>,
+            <span class="token-string">"user"</span>: <span class="token-string">"postgres"</span>,
+            <span class="token-string">"password"</span>: <span class="token-string">"password"</span>,
+            <span class="token-string">"database"</span>: <span class="token-string">"mydb"</span>,
+        },
+        redis_config={
+            <span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>,
+            <span class="token-string">"port"</span>: <span class="token-number">6379</span>,
+        }
+    )</code></pre>
+                </div>
+                
+                <h4>Using Resources</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> get_db, get_redis
+
+<span class="token-keyword">async def</span> <span class="token-function">query_users</span>():
+    db = <span class="token-keyword">await</span> <span class="token-function">get_db</span>()
+    <span class="token-keyword">return await</span> db.<span class="token-function">fetch</span>(<span class="token-string">"SELECT * FROM users"</span>)
+
+<span class="token-keyword">async def</span> <span class="token-function">cache_get</span>(key: str):
+    redis = <span class="token-keyword">await</span> <span class="token-function">get_redis</span>()
+    <span class="token-keyword">return await</span> redis.<span class="token-function">get</span>(key)</code></pre>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'zh/resource.html' : 'resource.html';
+        }
+    </script>
+</body>
+</html>

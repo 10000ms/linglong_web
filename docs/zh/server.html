@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务启动器 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link">快速开始</a>
+                <a href="server.html" class="nav-link active">服务启动器</a>
+                <a href="config.html" class="nav-link">配置管理</a>
+                <a href="resource.html" class="nav-link">资源管理</a>
+                <a href="http.html" class="nav-link">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link">限流</a>
+                <a href="cluster_lock.html" class="nav-link">分布式锁</a>
+                <a href="scheduler.html" class="nav-link">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>LinglongAppServer</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>服务启动器</h2>
+                
+                <p>
+                    <code>LinglongAppServer</code> 是核心的服务器启动类，负责处理初始化、中间件设置、
+                    扩展钩子和优雅停机。它封装了 FastAPI，并提供了额外的企业级功能。
+                </p>
+                
+                <h3>为什么需要 LinglongAppServer？</h3>
+                
+                <div class="card">
+                    <p>虽然 FastAPI 提供了优秀的异步框架，但构建生产级服务还需要额外的样板代码：</p>
+                    <ul>
+                        <li>设置 CORS、日志和错误处理中间件</li>
+                        <li>集成配置系统</li>
+                        <li>管理资源生命周期（数据库、Redis 等）</li>
+                        <li>处理优雅停机</li>
+                        <li>添加服务器扩展以支持自定义钩子</li>
+                    </ul>
+                    <p style="margin-top: 16px;">
+                        <code>LinglongAppServer</code> 将所有这些关注点封装成一个简单、统一的 API，
+                        让您可以专注于业务逻辑。
+                    </p>
+                </div>
+                
+                <h3>工作原理</h3>
+                
+                <div class="card">
+                    <h4>初始化流程</h4>
+                    <pre><code><span class="token-number">1</span>. 创建服务器实例
+<span class="token-number">2</span>. 使用配置、路由器和扩展进行初始化
+<span class="token-number">3</span>. 服务器应用中间件（CORS、日志、错误处理）
+<span class="token-number">4</span>. 服务器注册路由
+<span class="token-number">5</span>. 服务器开始监听指定的 host/port</code></pre>
+                </div>
+                
+                <h3>API 参考</h3>
+                
+                <h4>LinglongAppServer 方法</h4>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>方法</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>initialize()</code></td>
+                            <td>使用配置、路由器和扩展初始化服务器</td>
+                        </tr>
+                        <tr>
+                            <td><code>start()</code></td>
+                            <td>在指定的 host 和 port 上启动服务器</td>
+                        </tr>
+                        <tr>
+                            <td><code>stop()</code></td>
+                            <td>优雅地停止服务器</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_app()</code></td>
+                            <td>获取底层的 FastAPI 应用实例</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>initialize() 参数</h4>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>参数</th>
+                            <th>类型</th>
+                            <th>必需</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>service_name</code></td>
+                            <td><code>str</code></td>
+                            <td>是</td>
+                            <td>服务名称</td>
+                        </tr>
+                        <tr>
+                            <td><code>router</code></td>
+                            <td><code>APIRouter</code></td>
+                            <td>是</td>
+                            <td>包含已注册路由的 FastAPI 路由器</td>
+                        </tr>
+                        <tr>
+                            <td><code>config_dict</code></td>
+                            <td><code>Dict[str, type]</code></td>
+                            <td>是</td>
+                            <td>按环境键控的配置类</td>
+                        </tr>
+                        <tr>
+                            <td><code>extensions</code></td>
+                            <td><code>List[BaseServerExtension]</code></td>
+                            <td>否</td>
+                            <td>服务器扩展列表，用于钩子</td>
+                        </tr>
+                        <tr>
+                            <td><code>title</code></td>
+                            <td><code>str</code></td>
+                            <td>否</td>
+                            <td>API 文档标题</td>
+                        </tr>
+                        <tr>
+                            <td><code>version</code></td>
+                            <td><code>str</code></td>
+                            <td>否</td>
+                            <td>API 文档版本</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>使用示例</h3>
+                
+                <h4>基础用法</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">import</span> asyncio
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> (
+    LinglongAppServer,
+    ServerRouter,
+    init_config,
+    init_resources,
+)
+
+<span class="token-keyword">async def</span> <span class="token-function">main</span>():
+    <span class="token-comment"># 初始化配置</span>
+    <span class="token-function">init_config</span>({<span class="token-string">"dev"</span>: DevConfig}, mode_name=<span class="token-string">"dev"</span>)
+    
+    <span class="token-comment"># 初始化资源</span>
+    <span class="token-keyword">await</span> <span class="token-function">init_resources</span>(db_config={...}, redis_config={...})
+    
+    <span class="token-comment"># 创建路由器</span>
+    router = <span class="token-class">ServerRouter</span>()
+    <span class="token-keyword">@</span>router.<span class="token-function">route</span>(<span class="token-string">"/health"</span>, method=<span class="token-string">"GET"</span>)
+    <span class="token-keyword">async def</span> <span class="token-function">health</span>(request):
+        <span class="token-keyword">return</span> {<span class="token-string">"status"</span>: <span class="token-string">"ok"</span>}
+    
+    <span class="token-comment"># 创建并初始化服务器</span>
+    server = <span class="token-class">LinglongAppServer</span>()
+    <span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+        service_name=<span class="token-string">"my-api"</span>,
+        router=router.<span class="token-function">get_router</span>(),
+        config_dict={<span class="token-string">"dev"</span>: DevConfig},
+    )
+    
+    <span class="token-comment"># 启动服务器</span>
+    <span class="token-keyword">await</span> server.<span class="token-function">start</span>(host=<span class="token-string">"0.0.0.0"</span>, port=<span class="token-number">8080</span>)
+
+asyncio.<span class="token-function">run</span>(<span class="token-function">main</span>())</code></pre>
+                </div>
+                
+                <h4>使用服务器扩展</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> BaseServerExtension
+
+<span class="token-keyword">class</span> <span class="token-class">MyExtension</span>(BaseServerExtension):
+    <span class="token-keyword">async def</span> <span class="token-function">on_startup</span>(self, app):
+        <span class="token-comment"># 服务器启动前调用</span>
+        <span class="token-keyword">print</span>(<span class="token-string">"服务器启动中..."</span>)
+    
+    <span class="token-keyword">async def</span> <span class="token-function">on_shutdown</span>(self, app):
+        <span class="token-comment"># 服务器停止前调用</span>
+        <span class="token-keyword">print</span>(<span class="token-string">"服务器停止中..."</span>)
+
+server = <span class="token-class">LinglongAppServer</span>()
+<span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+    service_name=<span class="token-string">"my-api"</span>,
+    router=router.<span class="token-function">get_router</span>(),
+    config_dict={<span class="token-string">"dev"</span>: DevConfig},
+    extensions=[<span class="token-class">MyExtension</span>()],
+)</code></pre>
+                </div>
+                
+                <h4>使用 Swagger UI</h4>
+                
+                <div class="card">
+                    <pre><code>server = <span class="token-class">LinglongAppServer</span>()
+<span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+    service_name=<span class="token-string">"my-api"</span>,
+    router=router.<span class="token-function">get_router</span>(),
+    config_dict={<span class="token-string">"dev"</span>: DevConfig},
+    title=<span class="token-string">"我的 API 文档"</span>,
+    version=<span class="token-string">"1.0.0"</span>,
+)
+
+<span class="token-comment"># Swagger UI 访问地址：/docs</span>
+<span class="token-comment"># ReDoc 访问地址：/redoc</span></code></pre>
+                </div>
+                
+                <h3>优雅停机</h3>
+                
+                <div class="card">
+                    <p><code>LinglongAppServer</code> 自动处理优雅停机：</p>
+                    <ol>
+                        <li>接收 SIGTERM/SIGINT 信号</li>
+                        <li>停止接受新连接</li>
+                        <li>调用 <code>on_shutdown</code> 扩展</li>
+                        <li>关闭所有资源（数据库、Redis 等）</li>
+                        <li>干净地退出</li>
+                    </ol>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'server.html' : '../server.html';
+        }
+    </script>
+</body>
+</html>

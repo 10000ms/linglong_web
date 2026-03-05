@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link active">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        <div class="main">
+            <header class="header">
+                <div class="header-left"><h1>Quick Start</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            <main>
+                <h2>Quick Start</h2>
+                <p>Get up and running with Linglong Web in minutes. This guide covers installation, basic setup, and your first API endpoint.</p>
+                
+                <h3>Installation</h3>
+                <div class="card">
+                    <pre><code>pip install linglong-web</code></pre>
+                </div>
+                
+                <h3>Basic Setup</h3>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Create Configuration</h4>
+                        <p>Define your service configuration by extending <code>LinglongConfigBase</code>:</p>
+                        <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfigBase
+
+<span class="token-keyword">class</span> <span class="token-class">AppConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">True</span>
+    SERVICE_NAME = <span class="token-string">"my-api"</span>
+    PGSQL_HOST = <span class="token-string">"localhost"</span>
+    REDIS_HOST = <span class="token-string">"localhost"</span></code></pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Initialize Resources</h4>
+                        <p>Set up database and cache connections:</p>
+                        <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> init_resources
+
+<span class="token-keyword">await</span> init_resources(
+    db_config={<span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>, <span class="token-string">"database"</span>: <span class="token-string">"mydb"</span>},
+    redis_config={<span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>}
+)</code></pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Create API Endpoints</h4>
+                        <p>Use FastAPI's APIRouter with Linglong Web decorators:</p>
+                        <pre><code><span class="token-keyword">from</span> fastapi <span class="token-keyword">import</span> APIRouter
+<span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> cacher, limiter
+
+router = APIRouter()
+
+<span class="token-keyword">@</span>router.<span class="token-function">get</span>(<span class="token-string">"/users/{user_id}"</span>)
+<span class="token-keyword">@</span>cacher(ttl=<span class="token-number">60</span>)
+<span class="token-keyword">async def</span> <span class="token-function">get_user</span>(user_id: int):
+    <span class="token-keyword">return</span> {<span class="token-string">"id"</span>: user_id, <span class="token-string">"name"</span>: <span class="token-string">"John"</span>}</code></pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Start Server</h4>
+                        <p>Initialize and start the Linglong Web server:</p>
+                        <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongAppServer
+
+server = LinglongAppServer()
+<span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+    service_name=<span class="token-string">"my-api"</span>,
+    router=router,
+    config_dict={<span class="token-string">"dev"</span>: AppConfig}
+)
+<span class="token-keyword">await</span> server.<span class="token-function">start</span>(host=<span class="token-string">"0.0.0.0"</span>, port=<span class="token-number">8080</span>)</code></pre>
+                    </div>
+                </div>
+                
+                <h3>Complete Example</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">import</span> asyncio
+<span class="token-keyword">from</span> fastapi <span class="token-keyword">import</span> APIRouter
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongAppServer, LinglongConfigBase, init_resources
+<span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> cacher
+
+<span class="token-keyword">class</span> <span class="token-class">Config</span>(LinglongConfigBase):
+    SERVICE_NAME = <span class="token-string">"demo-api"</span>
+
+<span class="token-keyword">async def</span> <span class="token-function">main</span>():
+    <span class="token-keyword">await</span> init_resources()
+    
+    router = APIRouter()
+    
+    <span class="token-keyword">@</span>router.<span class="token-function">get</span>(<span class="token-string">"/hello"</span>)
+    <span class="token-keyword">async def</span> <span class="token-function">hello</span>():
+        <span class="token-keyword">return</span> {<span class="token-string">"message"</span>: <span class="token-string">"Hello, World!"</span>}
+    
+    server = LinglongAppServer()
+    <span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+        service_name=<span class="token-string">"demo-api"</span>,
+        router=router,
+        config_dict={<span class="token-string">"default"</span>: Config}
+    )
+    <span class="token-keyword">await</span> server.<span class="token-function">start</span>()
+
+asyncio.<span class="token-function">run</span>(<span class="token-function">main</span>())</code></pre>
+                </div>
+                
+                <h3>Next Steps</h3>
+                <p>Explore more features in the documentation:</p>
+                <ul>
+                    <li><a href="server.html">Server Configuration</a> - Advanced server options</li>
+                    <li><a href="config.html">Configuration</a> - Environment-based config</li>
+                    <li><a href="resource.html">Resources</a> - Database and cache management</li>
+                    <li><a href="cacher.html">Caching</a> - Redis caching decorators</li>
+                    <li><a href="limiter.html">Rate Limiting</a> - Request throttling</li>
+                </ul>
+            </main>
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'zh/quickstart.html' : 'quickstart.html';
+        }
+    </script>
+</body>
+</html>

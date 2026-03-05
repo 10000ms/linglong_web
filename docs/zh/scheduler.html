@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调度器 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link">快速开始</a>
+                <a href="server.html" class="nav-link">服务启动器</a>
+                <a href="config.html" class="nav-link">配置管理</a>
+                <a href="resource.html" class="nav-link">资源管理</a>
+                <a href="http.html" class="nav-link">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link">限流</a>
+                <a href="cluster_lock.html" class="nav-link">分布式锁</a>
+                <a href="scheduler.html" class="nav-link active">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>调度器</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            <main>
+                <h2>任务调度器</h2>
+                <p>Linglong Web 与 aioclock 集成，提供异步任务调度功能，用于后台作业和周期性任务。</p>
+                <h3>为什么需要任务调度？</h3>
+                <div class="card">
+                    <ul>
+                        <li><strong>后台作业</strong> - 异步运行耗时的任务</li>
+                        <li><strong>周期性任务</strong> - 调度重复操作</li>
+                        <li><strong>资源效率</strong> - 卸载非关键工作</li>
+                    </ul>
+                </div>
+                <h3>使用示例</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> aioclock <span class="token-keyword">import</span> Aioclock
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongAppServer
+
+app = <span class="token-class">Aioclock</span>()
+
+<span class="token-keyword">@</span>app.<span class="token-function">cron</span>(<span class="token-string">"*/5 * * * *"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">cleanup_old_data</span>():
+    <span class="token-comment"># 每 5 分钟运行一次</span>
+    <span class="token-keyword">await</span> cleanup_service.<span class="token-function">run</span>()</code></pre>
+                </div>
+            </main>
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    <script>
+        function setLang(lang) { window.location.href = lang === 'zh' ? 'scheduler.html' : '../scheduler.html'; }
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link active">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>Config</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>Configuration</h2>
+                
+                <p>
+                    Linglong Web provides a powerful configuration system with hot-reload support. 
+                    It allows you to define configuration classes for different environments and switch between them easily.
+                </p>
+                
+                <h3>Why Hot-Reload?</h3>
+                
+                <div class="card">
+                    <p>In production environments, being able to update configuration without restarting the service is critical:</p>
+                    <ul>
+                        <li><strong>Zero Downtime</strong> - Update settings without interrupting users</li>
+                        <li><strong>Dynamic Tuning</strong> - Adjust rate limits, cache TTLs, etc. on the fly</li>
+                        <li><strong>Operational Flexibility</strong> - Fix configuration errors without deployment</li>
+                    </ul>
+                </div>
+                
+                <h3>Core Components</h3>
+                
+                <h4>LinglongConfigBase</h4>
+                
+                <div class="card">
+                    <p>Base configuration class that provides default values for all settings:</p>
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfigBase
+
+<span class="token-keyword">class</span> <span class="token-class">DevConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">True</span>
+    SERVICE_NAME = <span class="token-string">"my-api"</span>
+    PGSQL_HOST = <span class="token-string">"localhost"</span>
+    REDIS_HOST = <span class="token-string">"localhost"</span></code></pre>
+                </div>
+                
+                <h4>LinglongConfig (LinglongConfigProxy)</h4>
+                
+                <div class="card">
+                    <p>Singleton proxy for accessing configuration values at runtime:</p>
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfig
+
+<span class="token-comment"># Access config values</span>
+service_name = LinglongConfig.SERVICE_NAME
+debug_mode = LinglongConfig.DEBUG</code></pre>
+                </div>
+                
+                <h3>API Reference</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method/Property</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>init_config(config_dict, mode_name)</code></td>
+                            <td>Initialize config with environment-specific classes</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.apply_updates(updates)</code></td>
+                            <td>Apply runtime config updates (hot-reload)</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.snapshot()</code></td>
+                            <td>Get a snapshot of current config values</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.reset()</code></td>
+                            <td>Reset config to initial state</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.load_from_dict(dict)</code></td>
+                            <td>Load config from a dictionary</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Configuration Options</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>DEBUG</code></td>
+                            <td><code>bool</code></td>
+                            <td><code>False</code></td>
+                            <td>Enable debug mode</td>
+                        </tr>
+                        <tr>
+                            <td><code>SERVICE_NAME</code></td>
+                            <td><code>str</code></td>
+                            <td><code>""</code></td>
+                            <td>Service name for logging</td>
+                        </tr>
+                        <tr>
+                            <td><code>PGSQL_*</code></td>
+                            <td><code>str</code></td>
+                            <td><code>...</code></td>
+                            <td>PostgreSQL connection settings</td>
+                        </tr>
+                        <tr>
+                            <td><code>REDIS_*</code></td>
+                            <td><code>str/int</code></td>
+                            <td><code>...</code></td>
+                            <td>Redis connection settings</td>
+                        </tr>
+                        <tr>
+                            <td><code>CORS_ALLOWED_ORIGINS</code></td>
+                            <td><code>List[str]</code></td>
+                            <td><code>["http://localhost"]</code></td>
+                            <td>CORS allowed origins</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Usage Examples</h3>
+                
+                <h4>Multi-Environment Setup</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfigBase, init_config
+
+<span class="token-keyword">class</span> <span class="token-class">DevConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">True</span>
+    PGSQL_HOST = <span class="token-string">"localhost"</span>
+
+<span class="token-keyword">class</span> <span class="token-class">ProdConfig</span>(LinglongConfigBase):
+    DEBUG = <span class="token-keyword">False</span>
+    PGSQL_HOST = <span class="token-string">"postgres.internal"</span>
+
+<span class="token-comment"># Initialize with environment configs</span>
+init_config({
+    <span class="token-string">"dev"</span>: DevConfig,
+    <span class="token-string">"prod"</span>: ProdConfig,
+}, mode_name=<span class="token-string">"dev"</span>)</code></pre>
+                </div>
+                
+                <h4>Hot-Reload with YAML</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">import</span> yaml
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfig
+
+<span class="token-comment"># Load from YAML file</span>
+<span class="token-keyword">with</span> <span class="token-function">open</span>(<span class="token-string">"config/prod.yaml"</span>) <span class="token-keyword">as</span> f:
+    settings = yaml.<span class="token-function">safe_load</span>(f)
+
+<span class="token-comment"># Apply updates without restart</span>
+LinglongConfig.<span class="token-function">apply_updates</span>(settings)</code></pre>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'zh/config.html' : 'config.html';
+        }
+    </script>
+</body>
+</html>

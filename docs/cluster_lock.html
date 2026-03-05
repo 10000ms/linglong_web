@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cluster Lock - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link active">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>Cluster Lock</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            <main>
+                <h2>Distributed Lock</h2>
+                <p>The <code>@cluster_lock</code> decorator provides Redis-based distributed locking for coordinating operations across multiple instances.</p>
+                <h3>Why Distributed Lock?</h3>
+                <div class="card">
+                    <ul>
+                        <li><strong>Prevent Race Conditions</strong> - Ensure single execution in distributed systems</li>
+                        <li><strong>Resource Coordination</strong> - Manage shared resources safely</li>
+                        <li><strong>Idempotency</strong> - Prevent duplicate operations</li>
+                    </ul>
+                </div>
+                <h3>Parameters</h3>
+                <table>
+                    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>key</code></td><td><code>str</code></td><td>Lock key name</td></tr>
+                        <tr><td><code>timeout</code></td><td><code>int</code></td><td>Lock timeout in seconds (default: 30)</td></tr>
+                    </tbody>
+                </table>
+                <h3>Usage Example</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> cluster_lock
+
+<span class="token-keyword">@</span>cluster_lock(key=<span class="token-string">"payment:order:123"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">process_payment</span>(order_id: str):
+    <span class="token-comment"># Only one instance can execute this at a time</span>
+    <span class="token-keyword">await</span> payment_service.<span class="token-function">charge</span>(order_id)</code></pre>
+                </div>
+            </main>
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    <script>
+        function setLang(lang) { window.location.href = lang === 'zh' ? 'zh/cluster_lock.html' : 'cluster_lock.html'; }
+    </script>
+</body>
+</html>

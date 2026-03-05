@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>限流 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link">快速开始</a>
+                <a href="server.html" class="nav-link">服务启动器</a>
+                <a href="config.html" class="nav-link">配置管理</a>
+                <a href="resource.html" class="nav-link">资源管理</a>
+                <a href="http.html" class="nav-link">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link active">限流</a>
+                <a href="cluster_lock.html" class="nav-link">分布式锁</a>
+                <a href="scheduler.html" class="nav-link">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>限流</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            <main>
+                <h2>限流器</h2>
+                <p><code>@limiter</code> 装饰器为 API 端点提供基于 Redis 的限流功能。它可以防止滥用并确保公平使用资源。</p>
+                <h3>为什么需要限流？</h3>
+                <div class="card">
+                    <ul>
+                        <li><strong>防止滥用</strong> - 阻止 DoS 攻击和过多请求</li>
+                        <li><strong>公平使用</strong> - 确保所有用户获得平等的访问权限</li>
+                        <li><strong>成本控制</strong> - 防止意外的資源消耗</li>
+                        <li><strong>服务稳定性</strong> - 保护下游服务</li>
+                    </ul>
+                </div>
+                <h3>工作原理</h3>
+                <div class="card">
+                    <ol>
+                        <li>使用 Redis 滑动窗口算法</li>
+                        <li>按 key（IP、用户 ID 或自定义）追踪请求</li>
+                        <li>超过限制时返回 429</li>
+                        <li>可配置的窗口大小和最大请求数</li>
+                    </ol>
+                </div>
+                <h3>参数</h3>
+                <table>
+                    <thead>
+                        <tr><th>参数</th><th>类型</th><th>必需</th><th>描述</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>max_calls</code></td><td><code>int</code></td><td>是</td><td>窗口内允许的最大请求数</td></tr>
+                        <tr><td><code>period</code></td><td><code>int</code></td><td>是</td><td>时间窗口（秒）</td></tr>
+                        <tr><td><code>key_builder</code></td><td><code>Callable</code></td><td>否</td><td>自定义函数来构建限流键</td></tr>
+                    </tbody>
+                </table>
+                <h3>使用示例</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> limiter
+
+<span class="token-comment"># 每 60 秒允许 100 个请求</span>
+<span class="token-keyword">@</span>limiter(max_calls=<span class="token-number">100</span>, period=<span class="token-number">60</span>)
+<span class="token-keyword">async def</span> <span class="token-function">api_endpoint</span>(request):
+    <span class="token-keyword">return</span> {<span class="token-string">"status"</span>: <span class="token-string">"ok"</span>}</code></pre>
+                </div>
+            </main>
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    <script>
+        function setLang(lang) { window.location.href = lang === 'zh' ? 'limiter.html' : '../limiter.html'; }
+    </script>
+</body>
+</html>

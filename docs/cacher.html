@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cacher - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link">HTTP Client</a>
+                <a href="cacher.html" class="nav-link active">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>Cacher</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>Caching Decorator</h2>
+                
+                <p>
+                    The <code>@cacher</code> decorator provides Redis-based function result caching. 
+                    It can dramatically improve performance by caching expensive function calls.
+                </p>
+                
+                <h3>Why Use Caching?</h3>
+                
+                <div class="card">
+                    <p>Caching is essential for high-performance applications:</p>
+                    <ul>
+                        <li><strong>Reduce Latency</strong> - Serve cached results instantly</li>
+                        <li><strong>Decrease Load</strong> - Reduce database and API calls</li>
+                        <li><strong>Cost Savings</strong> - Minimize expensive computations</li>
+                        <li><strong>Better UX</strong> - Faster response times for users</li>
+                    </ul>
+                </div>
+                
+                <h3>How It Works</h3>
+                
+                <div class="card">
+                    <p>The decorator works by:</p>
+                    <ol>
+                        <li>Generating a cache key from function name and arguments</li>
+                        <li>Checking if the result exists in Redis</li>
+                        <li>Returning cached result if available</li>
+                        <li>Executing the function and caching the result if not</li>
+                        <li>Setting TTL (Time To Live) for automatic expiration</li>
+                    </ol>
+                </div>
+                
+                <h3>API Reference</h3>
+                
+                <h4>Parameters</h4>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>prefix</code></td>
+                            <td><code>str</code></td>
+                            <td>No</td>
+                            <td>Cache key prefix (default: "cacher")</td>
+                        </tr>
+                        <tr>
+                            <td><code>ttl</code></td>
+                            <td><code>int</code></td>
+                            <td>No</td>
+                            <td>Time to live in seconds (default: 300)</td>
+                        </tr>
+                        <tr>
+                            <td><code>key_builder</code></td>
+                            <td><code>Callable</code></td>
+                            <td>No</td>
+                            <td>Custom function to build cache key</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Usage Examples</h3>
+                
+                <h4>Basic Usage</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> cacher
+
+<span class="token-comment"># Cache result for 60 seconds</span>
+<span class="token-keyword">@</span>cacher(ttl=<span class="token-number">60</span>)
+<span class="token-keyword">async def</span> <span class="token-function">get_user</span>(user_id: int):
+    <span class="token-comment"># This will be cached for 60 seconds</span>
+    <span class="token-keyword">return await</span> db.<span class="token-function">fetchone</span>(
+        <span class="token-string">"SELECT * FROM users WHERE id = $1"</span>, 
+        user_id
+    )</code></pre>
+                </div>
+                
+                <h4>With Custom Key Builder</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">def</span> <span class="token-function">my_key_builder</span>(func, *args, **kwargs):
+    <span class="token-comment"># Custom key based on user_id and include org</span>
+    <span class="token-keyword">return</span> <span class="token-string">f"user:{args[0]}:org:{kwargs.get('org_id')}"</span>
+
+<span class="token-keyword">@</span>cacher(ttl=<span class="token-number">300</span>, key_builder=my_key_builder)
+<span class="token-keyword">async def</span> <span class="token-function">get_user_details</span>(user_id: int, org_id: int = <span class="token-number">1</span>):
+    <span class="token-keyword">return await</span> fetch_user_details(user_id, org_id)</code></pre>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'zh/cacher.html' : 'cacher.html';
+        }
+    </script>
+</body>
+</html>

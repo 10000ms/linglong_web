@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Client - Linglong Web</title>
+    <link rel="stylesheet" href="doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Documentation</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">Overview</a>
+                <a href="quickstart.html" class="nav-link">Quick Start</a>
+                <a href="server.html" class="nav-link">Server</a>
+                <a href="config.html" class="nav-link">Config</a>
+                <a href="resource.html" class="nav-link">Resource</a>
+                <a href="http.html" class="nav-link active">HTTP Client</a>
+                <a href="cacher.html" class="nav-link">Cacher</a>
+                <a href="limiter.html" class="nav-link">Limiter</a>
+                <a href="cluster_lock.html" class="nav-link">Cluster Lock</a>
+                <a href="scheduler.html" class="nav-link">Scheduler</a>
+                <a href="utils.html" class="nav-link">Utils</a>
+                <a href="examples.html" class="nav-link">Examples</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>HTTP Client</h1></div>
+                <div class="lang-toggle">
+                    <button class="active" onclick="setLang('en')">EN</button>
+                    <button onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>HTTP Client</h2>
+                
+                <p>
+                    Linglong Web provides an enhanced HTTP client based on httpx with automatic 
+                    request-id propagation for distributed tracing. It simplifies making HTTP requests 
+                    to external services while maintaining traceability.
+                </p>
+                
+                <h3>Why Request-Id Propagation?</h3>
+                
+                <div class="card">
+                    <p>In microservices architectures, tracking requests across service boundaries is critical:</p>
+                    <ul>
+                        <li><strong>Distributed Tracing</strong> - Correlate logs across services</li>
+                        <li><strong>Debugging</strong> - Find the root cause of issues quickly</li>
+                        <li><strong>Audit Trail</strong> - Track the complete request flow</li>
+                    </ul>
+                    <p style="margin-top: 16px;">
+                        The HTTP client automatically extracts the request-id from incoming requests 
+                        and propagates it to downstream services.
+                    </p>
+                </div>
+                
+                <h3>Core Features</h3>
+                
+                <ul>
+                    <li><strong>Request-Id Propagation</strong> - Automatically passes X-Request-Id header</li>
+                    <li><strong>Connection Pooling</strong> - Reuses connections for better performance</li>
+                    <li><strong>Timeout Management</strong> - Configurable timeouts for different operations</li>
+                    <li><strong>Retry Logic</strong> - Automatic retries for transient failures</li>
+                </ul>
+                
+                <h3>API Reference</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>get(url, **kwargs)</code></td>
+                            <td>Send GET request</td>
+                        </tr>
+                        <tr>
+                            <td><code>post(url, **kwargs)</code></td>
+                            <td>Send POST request</td>
+                        </tr>
+                        <tr>
+                            <td><code>put(url, **kwargs)</code></td>
+                            <td>Send PUT request</td>
+                        </tr>
+                        <tr>
+                            <td><code>delete(url, **kwargs)</code></td>
+                            <td>Send DELETE request</td>
+                        </tr>
+                        <tr>
+                            <td><code>patch(url, **kwargs)</code></td>
+                            <td>Send PATCH request</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Usage Examples</h3>
+                
+                <h4>Basic Usage</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.http <span class="token-keyword">import</span> LinglongHttpClient
+
+client = <span class="token-class">LinglongHttpClient</span>(base_url=<span class="token-string">"https://api.example.com"</span>)
+
+<span class="token-comment"># GET request</span>
+response = <span class="token-keyword">await</span> client.<span class="token-function">get</span>(<span class="token-string">"/users"</span>)
+data = response.<span class="token-function">json</span>()
+
+<span class="token-comment"># POST request</span>
+response = <span class="token-keyword">await</span> client.<span class="token-function">post</span>(
+    <span class="token-string">"/users"</span>,
+    json={<span class="token-string">"name"</span>: <span class="token-string">"John"</span>}
+)</code></pre>
+                </div>
+                
+                <h4>With Request Context</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.http <span class="token-keyword">import</span> LinglongHttpClient
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> RequestContext
+
+<span class="token-comment"># Request-Id is automatically propagated</span>
+client = <span class="token-class">LinglongHttpClient</span>(base_url=<span class="token-string">"https://api.example.com"</span>)
+
+<span class="token-keyword">async def</span> <span class="token-function">call_service</span>():
+    request_id = RequestContext.<span class="token-function">request_id</span>  <span class="token-comment"># Auto-populated</span>
+    response = <span class="token-keyword">await</span> client.<span class="token-function">get</span>(<span class="token-string">"/data"</span>)
+    <span class="token-keyword">return</span> response.<span class="token-function">json</span>()</code></pre>
+                </div>
+                
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'zh/http.html' : 'http.html';
+        }
+    </script>
+</body>
+</html>

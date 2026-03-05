@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linglong Web - Asynchronous FastAPI Toolkit</title>
+    <style>
+        :root {
+            --primary: #00DC82;
+            --primary-dark: #00B468;
+            --bg: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-card-hover: #1a1a24;
+            --text: #ffffff;
+            --text-secondary: #8b8b9e;
+            --border: #2a2a3a;
+            --code-bg: #1a1a24;
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f5f7fa;
+                --bg-card: #ffffff;
+                --bg-card-hover: #f0f2f5;
+                --text: #1a1a2e;
+                --text-secondary: #666680;
+                --border: #e4e6ed;
+                --code-bg: #f8f9fb;
+                --token-keyword: #d73a49;
+                --token-string: #032f62;
+                --token-function: #6f42c1;
+                --token-comment: #6a737d;
+                --token-class: #22863a;
+                --header-bg: rgba(255, 255, 255, 0.9);
+                --token-keyword: #d73a49;
+                --token-string: #032f62;
+                --token-function: #6f42c1;
+                --token-comment: #6a737d;
+                --token-class: #22863a;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--header-bg, rgba(10, 10, 15, 0.85));
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 100;
+        }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary) 0%, #00f5a0 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        .header-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .header-nav a:hover { color: var(--text); }
+        .header-nav a.active { color: var(--primary); }
+        .lang-toggle {
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .lang-toggle button {
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .lang-toggle button.active {
+            background: var(--primary);
+            color: #000;
+            font-weight: 600;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 40px 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(0, 220, 130, 0.08) 0%, transparent 60%);
+        }
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero .tagline {
+            font-size: 20px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* Features */
+        .features {
+            padding: 80px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .section-title h2 {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+        .section-title p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 220, 130, 0.1);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, rgba(0, 220, 130, 0.2) 0%, rgba(0, 245, 160, 0.1) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .feature-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Comparison */
+        .comparison {
+            padding: 80px 40px;
+            background: var(--bg-card);
+        }
+        .comparison-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .comparison h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 40px;
+        }
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .comp-table th, .comp-table td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .comp-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+        .comp-table td:first-child {
+            font-weight: 500;
+        }
+        .comp-table .check {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .comp-table .cross {
+            color: #ff6b6b;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Code block */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        code {
+            font-family: 'Fira Code', 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .token-keyword { color: var(--token-keyword, #ff79c6); }
+        .token-string { color: var(--token-string, #d19a66); }
+        .token-function { color: var(--token-function, #50fa7b); }
+        .token-comment { color: var(--token-comment, #6272a4); }
+        .token-class { color: var(--token-class, #8be9fd); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-logo">
+            <div class="logo-icon">⚡</div>
+            <span>Linglong Web</span>
+        </div>
+        <nav class="header-nav">
+            <a href="#features">Features</a>
+            <a href="#comparison">Compare</a>
+            <a href="quickstart.html">Quick Start</a>
+            <a href="examples.html">Examples</a>
+            <div class="lang-toggle">
+                <button class="active" onclick="setLang('en')">EN</button>
+                <button onclick="setLang('zh')">中文</button>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Linglong Web</h1>
+        <p class="tagline">
+            A powerful asynchronous FastAPI toolkit that provides out-of-the-box solutions for production-grade services. 
+            Configuration hot-reload, distributed caching, rate limiting, cluster locks, and more.
+        </p>
+        <div class="hero-buttons">
+            <a href="quickstart.html" class="btn btn-primary">Get Started →</a>
+            <a href="examples.html" class="btn btn-secondary">View Examples</a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section-title">
+            <h2>Why Choose Linglong Web?</h2>
+            <p>Everything you need to build production-ready async services</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔄</div>
+                <h3>Configuration Hot-Reload</h3>
+                <p>Modify configuration files without restarting the service. Perfect for production environments where zero-downtime is critical.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🗄️</div>
+                <h3>Unified Resource Management</h3>
+                <p>Initialize and manage databases (PostgreSQL/MySQL), Redis, RabbitMQ, MongoDB, and Celery from a single interface.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Distributed Caching</h3>
+                <p>Redis-based caching decorator with automatic key generation and TTL support. Scale your cache across multiple instances.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Rate Limiting</h3>
+                <p>Redis-backed rate limiting with flexible rules. Prevent abuse while maintaining high availability.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Distributed Locks</h3>
+                <p>Cluster-wide mutex using Redis. Ensure critical sections are executed only once across multiple instances.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Task Scheduling</h3>
+                <p>Built-in integration with aioclock for cron jobs and periodic tasks with built-in error handling and logging.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <h3>HTTP Client</h3>
+                <p>Wrapper around aiohttp with automatic request-id propagation and unified error handling across microservices.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>DDL Management</h3>
+                <p>Auto-create and migrate database tables. Version control your schema directly in code.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Standardized Responses</h3>
+                <p>Unified API response format with success/error building helpers. Consistent API design across your team.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="comparison" id="comparison">
+        <div class="comparison-content">
+            <h2>Compare with Plain FastAPI</h2>
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>FastAPI Only</th>
+                        <th>Linglong Web</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Config Hot-Reload</td>
+                        <td class="cross">❌ Manual</td>
+                        <td class="check">✅ Built-in</td>
+                    </tr>
+                    <tr>
+                        <td>Resource Management</td>
+                        <td class="cross">❌ DIY</td>
+                        <td class="check">✅ Unified API</td>
+                    </tr>
+                    <tr>
+                        <td>Distributed Cache</td>
+                        <td class="cross">❌ DIY</td>
+                        <td class="check">✅ @cacher decorator</td>
+                    </tr>
+                    <tr>
+                        <td>Rate Limiting</td>
+                        <td class="cross">❌ DIY</td>
+                        <td class="check">✅ @limiter decorator</td>
+                    </tr>
+                    <tr>
+                        <td>Cluster Locks</td>
+                        <td class="cross">❌ DIY</td>
+                        <td class="check">✅ @cluster_lock</td>
+                    </tr>
+                    <tr>
+                        <td>Task Scheduling</td>
+                        <td class="cross">❌ External</td>
+                        <td class="check">✅ aioclock integrated</td>
+                    </tr>
+                    <tr>
+                        <td>DDL Management</td>
+                        <td class="cross">❌ Alembic/DIY</td>
+                        <td class="check">✅ AutoDDLManager</td>
+                    </tr>
+                    <tr>
+                        <td>Response Helpers</td>
+                        <td class="cross">❌ DIY</td>
+                        <td class="check">✅ build_response</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a></p>
+    </footer>
+
+    <script>
+        function setLang(lang) {
+            const url = lang === 'zh' ? 'zh/index.html' : 'index.html';
+            window.location.href = url;
+        }
+    </script>
+</body>
+</html>

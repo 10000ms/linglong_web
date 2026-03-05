@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快速开始 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link active">快速开始</a>
+                <a href="server.html" class="nav-link">服务启动器</a>
+                <a href="config.html" class="nav-link">配置管理</a>
+                <a href="resource.html" class="nav-link">资源管理</a>
+                <a href="http.html" class="nav-link">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link">限流</a>
+                <a href="cluster_lock.html" class="nav-link">分布式锁</a>
+                <a href="scheduler.html" class="nav-link">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>快速开始</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            
+            <main>
+                <h2>入门指南</h2>
+                
+                <p>
+                    本指南将带您完成使用 Linglong Web 构建生产级异步服务的基本步骤。
+                    我们将涵盖安装、配置、资源管理和服务器启动。
+                </p>
+                
+                <div class="warning">
+                    <div class="warning-title">前置要求</div>
+                    <ul>
+                        <li>Python 3.10 或更高版本</li>
+                        <li>Redis 服务器（用于缓存、限流、分布式锁）</li>
+                        <li>PostgreSQL/MySQL（可选，用于数据库功能）</li>
+                    </ul>
+                </div>
+                
+                <h3>1. 安装</h3>
+                
+                <p>
+                    通过 pip 安装 Linglong Web：
+                </p>
+                
+                <pre><code><span class="token-comment"># 从 PyPI 安装</span>
+<span class="token-function">pip</span> install linglong-web
+
+<span class="token-comment"># 或从 GitHub 安装最新版本</span>
+<span class="token-function">pip</span> install git+https://github.com/victorlai/linglong-web.git</code></pre>
+                
+                <h3>2. 项目结构</h3>
+                
+                <p>
+                    典型的 Linglong Web 项目结构如下：
+                </p>
+                
+                <pre><code>my-project/
+├── app/
+│   ├── __init__.py
+│   ├── config.py       <span class="token-comment"># 配置类</span>
+│   ├── routers/       <span class="token-comment"># API 路由处理器</span>
+│   └── main.py        <span class="token-comment"># 应用入口</span>
+├── config/
+│   └── settings.yaml  <span class="token-comment"># 运行时配置（支持热重载）</span>
+├── requirements.txt
+└── pyproject.toml</code></pre>
+                
+                <h3>3. 配置</h3>
+                
+                <p>
+                    Linglong Web 提供了强大的配置系统，支持<strong>热重载</strong>。
+                    您可以定义多个配置环境（dev、test、prod）并轻松切换。
+                </p>
+                
+                <h4>基础配置</h4>
+                
+                <div class="card">
+                    <p><span class="badge">步骤 1</span> 通过继承 <code>LinglongConfigBase</code> 定义配置类</p>
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfigBase
+
+<span class="token-keyword">class</span> <span class="token-class">DevConfig</span>(LinglongConfigBase):
+    <span class="token-string">"""开发环境配置"""</span>
+    DEBUG = <span class="token-keyword">True</span>
+    SERVICE_NAME = <span class="token-string">"my-api"</span>
+    
+    <span class="token-comment"># 数据库设置</span>
+    PGSQL_HOST = <span class="token-string">"localhost"</span>
+    PGSQL_PORT = <span class="token-string">"5432"</span>
+    PGSQL_USER = <span class="token-string">"postgres"</span>
+    PGSQL_PASSWORD = <span class="token-string">"password"</span>
+    PGSQL_DB = <span class="token-string">"mydb"</span>
+    
+    <span class="token-comment"># Redis 设置</span>
+    REDIS_HOST = <span class="token-string">"localhost"</span>
+    REDIS_PORT = <span class="token-number">6379</span></code></pre>
+                </div>
+                
+                <div class="card">
+                    <p><span class="badge">步骤 2</span> 使用 <code>init_config()</code> 初始化配置</p>
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> init_config
+
+<span class="token-comment"># 使用多个环境配置初始化</span>
+init_config({
+    <span class="token-string">"dev"</span>: DevConfig,
+    <span class="token-string">"prod"</span>: ProdConfig,
+}, mode_name=<span class="token-string">"dev"</span>)
+
+<span class="token-comment"># 或使用环境变量 LINGLONG_CONFIG</span>
+<span class="token-comment"># export LINGLONG_CONFIG=prod</span>
+<span class="token-comment"># init_config({"dev": DevConfig, "prod": ProdConfig})</span></code></pre>
+                </div>
+                
+                <h4>热重载配置</h4>
+                
+                <p>
+                    对于生产环境，您可以使用支持<strong>热重载</strong>的 YAML 配置文件，
+                    无需重启服务即可修改配置：
+                </p>
+                
+                <div class="card">
+                    <pre><code><span class="token-comment"># config/settings.yaml（此文件可在运行时修改）</span>
+<span class="token-comment"># DEBUG: true</span>
+<span class="token-comment"># SERVICE_NAME: "my-api"</span>
+<span class="token-comment"># REDIS_HOST: "redis.internal"</span>
+
+<span class="token-keyword">import</span> yaml
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> LinglongConfig
+
+<span class="token-comment"># 从 YAML 文件加载</span>
+<span class="token-keyword">with</span> <span class="token-function">open</span>(<span class="token-string">"config/settings.yaml"</span>) <span class="token-keyword">as</span> f:
+    settings = yaml.<span class="token-function">safe_load</span>(f)
+
+<span class="token-comment"># 应用更新（支持热重载）</span>
+LinglongConfig.<span class="token-function">apply_updates</span>(settings)</code></pre>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>方法</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>init_config(config_dict, mode_name)</code></td>
+                            <td>使用环境特定的配置类初始化</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.apply_updates(updates)</code></td>
+                            <td>应用运行时配置更新（支持热重载）</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.snapshot()</code></td>
+                            <td>获取当前配置值的快照</td>
+                        </tr>
+                        <tr>
+                            <td><code>LinglongConfig.reset()</code></td>
+                            <td>重置配置到初始状态</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>4. 资源管理</h3>
+                
+                <p>
+                    Linglong Web 为数据库、缓存、消息队列等提供统一的资源管理。
+                    通过单个函数调用初始化所有资源。
+                </p>
+                
+                <h4>初始化资源</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> init_resources, Rmanager
+
+<span class="token-comment"># 初始化数据库、Redis 和其他资源</span>
+<span class="token-keyword">await</span> <span class="token-function">init_resources</span>(
+    db_config={
+        <span class="token-string">"default"</span>: {
+            <span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>,
+            <span class="token-string">"port"</span>: <span class="token-number">5432</span>,
+            <span class="token-string">"user"</span>: <span class="token-string">"postgres"</span>,
+            <span class="token-string">"password"</span>: <span class="token-string">"password"</span>,
+            <span class="token-string">"database"</span>: <span class="token-string">"mydb"</span>,
+        }
+    },
+    redis_config={
+        <span class="token-string">"default"</span>: {
+            <span class="token-string">"host"</span>: <span class="token-string">"localhost"</span>,
+            <span class="token-string">"port"</span>: <span class="token-number">6379</span>,
+        }
+    }
+)
+
+<span class="token-comment"># 通过 Rmanager 访问资源</span>
+db_engine = Rmanager.<span class="token-function">get_pgsql_engine</span>(<span class="token-string">"default"</span>)
+redis_client = Rmanager.<span class="token-function">get_redis</span>(<span class="token-string">"default"</span>)</code></pre>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>资源类型</th>
+                            <th>访问方法</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PostgreSQL</td>
+                            <td><code>Rmanager.get_pgsql_engine(alias)</code></td>
+                        </tr>
+                        <tr>
+                            <td>MySQL</td>
+                            <td><code>Rmanager.get_mysql_engine(alias)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Redis</td>
+                            <td><code>Rmanager.get_redis(alias)</code></td>
+                        </tr>
+                        <tr>
+                            <td>RabbitMQ</td>
+                            <td><code>Rmanager.get_rabbitmq(alias)</code></td>
+                        </tr>
+                        <tr>
+                            <td>MongoDB</td>
+                            <td><code>Rmanager.get_mongo(alias)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>关闭资源</h4>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> close_resources
+
+<span class="token-comment"># 优雅地关闭所有资源</span>
+<span class="token-keyword">await</span> <span class="token-function">close_resources</span>()</code></pre>
+                </div>
+                
+                <h3>5. 构建 API 路由</h3>
+                
+                <p>
+                    Linglong Web 提供了简洁优雅的路由系统来定义 API 端点。
+                </p>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> ServerRouter, build_success_response
+
+router = <span class="token-class">ServerRouter</span>()
+
+<span class="token-comment"># 使用装饰器定义路由</span>
+<span class="token-keyword">@</span>router.<span class="token-function">route</span>(<span class="token-string">"/api/users"</span>, method=<span class="token-string">"GET"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">list_users</span>(request):
+    users = [<span class="token-string">{"id": 1, "name": "Alice"}</span>, <span class="token-string">{"id": 2, "name": "Bob"}</span>]
+    <span class="token-keyword">return</span> <span class="token-function">build_success_response</span>({<span class="token-string">"users"</span>: users})
+
+<span class="token-keyword">@</span>router.<span class="token-function">route</span>(<span class="token-string">"/api/users/{user_id}"</span>, method=<span class="token-string">"GET"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">get_user</span>(request, user_id: int):
+    <span class="token-keyword">return</span> <span class="token-function">build_success_response</span>({<span class="token-string">"id"</span>: user_id, <span class="token-string">"name"</span>: <span class="token-string">f"User {user_id}"</span>})
+
+<span class="token-keyword">@</span>router.<span class="token-function">route</span>(<span class="token-string">"/api/users"</span>, method=<span class="token-string">"POST"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">create_user</span>(request):
+    data = <span class="token-keyword">await</span> request.<span class="token-function">json</span>()
+    <span class="token-keyword">return</span> <span class="token-function">build_success_response</span>({<span class="token-string">"user"</span>: data}, status=<span class="token-number">201</span>)</code></pre>
+                </div>
+                
+                <h3>6. 启动服务器</h3>
+                
+                <p>
+                    最后，使用您的路由和配置初始化并启动服务器。
+                </p>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">import</span> asyncio
+<span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> (
+    LinglongAppServer,
+    ServerRouter,
+    init_config,
+    init_resources,
+    close_resources,
+)
+
+<span class="token-keyword">async def</span> <span class="token-function">main</span>():
+    <span class="token-comment"># 1. 初始化配置</span>
+    <span class="token-function">init_config</span>({<span class="token-string">"dev"</span>: DevConfig}, mode_name=<span class="token-string">"dev"</span>)
+    
+    <span class="token-comment"># 2. 初始化资源（数据库、Redis 等）</span>
+    <span class="token-keyword">await</span> <span class="token-function">init_resources</span>(db_config={...}, redis_config={...})
+    
+    <span class="token-comment"># 3. 创建并配置服务器</span>
+    server = <span class="token-class">LinglongAppServer</span>()
+    <span class="token-keyword">await</span> server.<span class="token-function">initialize</span>(
+        service_name=<span class="token-string">"my-api"</span>,
+        router=router.<span class="token-function">get_router</span>(),
+        config_dict={<span class="token-string">"dev"</span>: DevConfig},
+    )
+    
+    <span class="token-comment"># 4. 启动服务器</span>
+    <span class="token-keyword">await</span> server.<span class="token-function">start</span>(host=<span class="token-string">"0.0.0.0"</span>, port=<span class="token-number">8080</span>)
+
+<span class="token-keyword">if</span> __name__ == <span class="token-string">"__main__"</span>:
+    asyncio.<span class="token-function">run</span>(<span class="token-function">main</span>())</code></pre>
+                </div>
+                
+                <h3>7. 添加装饰器</h3>
+                
+                <p>
+                    Linglong Web 提供了强大的装饰器，用于缓存、限流和分布式锁。
+                </p>
+                
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web <span class="token-keyword">import</span> cacher, limiter, cluster_lock
+
+<span class="token-comment"># 缓存结果 5 分钟</span>
+<span class="token-keyword">@</span>cacher.<span class="token-function">cacher</span>(key=<span class="token-string">"user:{user_id}"</span>, expire=<span class="token-number">300</span>)
+<span class="token-keyword">async def</span> <span class="token-function">get_user</span>(user_id: int):
+    <span class="token-keyword">return</span> <span class="token-keyword">await</span> db.<span class="token-function">fetchone</span>(<span class="token-string">"SELECT * FROM users WHERE id = $1"</span>, user_id)
+
+<span class="token-comment"># 限流：每分钟 100 次请求</span>
+<span class="token-keyword">@</span>limiter.<span class="token-function">limiter</span>(key=<span class="token-string">"api:/users"</span>, rate=<span class="token-string">"100/minute"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">list_users</span>():
+    <span class="token-keyword">return</span> <span class="token-keyword">await</span> db.<span class="token-function">fetch</span>(<span class="token-string">"SELECT * FROM users"</span>)
+
+<span class="token-comment"># 分布式锁：防止并发执行</span>
+<span class="token-keyword">@</span>cluster_lock.<span class="token-function">cluster_lock</span>(key=<span class="token-string">"job:sync:{user_id}"</span>, timeout=<span class="token-number">30</span>)
+<span class="token-keyword">async def</span> <span class="token-function">sync_user_data</span>(user_id: int):
+    <span class="token-keyword">await</span> <span class="token-function">perform_sync</span>(user_id)</code></pre>
+                </div>
+                
+                <h3>接下来做什么？</h3>
+                
+                <ul>
+                    <li><strong>服务扩展</strong> - 学习如何使用自定义中间件、钩子和生命周期处理器扩展服务器</li>
+                    <li><strong>HTTP 客户端</strong> - 使用支持 request-id 透传的内置 HTTP 客户端</li>
+                    <li><strong>调度器</strong> - 通过 aioclock 集成设置定时任务</li>
+                    <li><strong>DDL 管理器</strong> - 自动创建和迁移数据库表</li>
+                </ul>
+            </main>
+            
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        function setLang(lang) {
+            window.location.href = lang === 'zh' ? 'quickstart.html' : '../quickstart.html';
+        }
+    </script>
+</body>
+</html>

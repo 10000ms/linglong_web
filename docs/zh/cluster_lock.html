@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分布式锁 - Linglong Web</title>
+    <link rel="stylesheet" href="../doc.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">文档</div>
+            <div class="nav-group">
+                <a href="index.html" class="nav-link">概览</a>
+                <a href="quickstart.html" class="nav-link">快速开始</a>
+                <a href="server.html" class="nav-link">服务启动器</a>
+                <a href="config.html" class="nav-link">配置管理</a>
+                <a href="resource.html" class="nav-link">资源管理</a>
+                <a href="http.html" class="nav-link">HTTP 客户端</a>
+                <a href="cacher.html" class="nav-link">缓存</a>
+                <a href="limiter.html" class="nav-link">限流</a>
+                <a href="cluster_lock.html" class="nav-link active">分布式锁</a>
+                <a href="scheduler.html" class="nav-link">调度器</a>
+                <a href="utils.html" class="nav-link">工具</a>
+                <a href="examples.html" class="nav-link">示例</a>
+            </div>
+        </aside>
+        <div class="main">
+            <header>
+                <div class="header-left"><h1>分布式锁</h1></div>
+                <div class="lang-toggle">
+                    <button onclick="setLang('en')">EN</button>
+                    <button class="active" onclick="setLang('zh')">中文</button>
+                </div>
+            </header>
+            <main>
+                <h2>分布式锁</h2>
+                <p><code>@cluster_lock</code> 装饰器提供基于 Redis 的分布式锁，用于在多个实例之间协调操作。</p>
+                <h3>为什么需要分布式锁？</h3>
+                <div class="card">
+                    <ul>
+                        <li><strong>防止竞态条件</strong> - 确保在分布式系统中单一执行</li>
+                        <li><strong>资源协调</strong> - 安全地管理共享资源</li>
+                        <li><strong>幂等性</strong> - 防止重复操作</li>
+                    </ul>
+                </div>
+                <h3>参数</h3>
+                <table>
+                    <thead><tr><th>参数</th><th>类型</th><th>描述</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>key</code></td><td><code>str</code></td><td>锁键名称</td></tr>
+                        <tr><td><code>timeout</code></td><td><code>int</code></td><td>锁超时时间（秒），默认：30</td></tr>
+                    </tbody>
+                </table>
+                <h3>使用示例</h3>
+                <div class="card">
+                    <pre><code><span class="token-keyword">from</span> linglong_web.decorators <span class="token-keyword">import</span> cluster_lock
+
+<span class="token-keyword">@</span>cluster_lock(key=<span class="token-string">"payment:order:123"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">process_payment</span>(order_id: str):
+    <span class="token-comment"># 同一时间只有一个实例可以执行</span>
+    <span class="token-keyword">await</span> payment_service.<span class="token-function">charge</span>(order_id)</code></pre>
+                </div>
+            </main>
+            <footer>
+                MIT License · <a href="https://github.com/victorlai/linglong-web">GitHub</a> · <a href="https://pypi.org/project/linglong-web/">PyPI</a>
+            </footer>
+        </div>
+    </div>
+    <script>
+        function setLang(lang) { window.location.href = lang === 'zh' ? 'cluster_lock.html' : '../cluster_lock.html'; }
+    </script>
+</body>
+</html>
