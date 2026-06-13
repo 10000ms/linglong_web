@@ -44,7 +44,7 @@ class _DummyMongo:
     async def _admin_command(self, _cmd: str) -> None:
         return None
 
-    def close(self) -> None:
+    async def close(self) -> None:
         self.closed = True
 
 
@@ -113,11 +113,11 @@ async def test_init_mongodb_skips_without_uri(monkeypatch) -> None:
 
     called = {"n": 0}
 
-    def _motor_client(_uri: str):
+    def _mongo_client(_uri: str):
         called["n"] += 1
         return _DummyMongo()
 
-    monkeypatch.setattr("linglong_web.core.resource.AsyncIOMotorClient", _motor_client)
+    monkeypatch.setattr("linglong_web.core.resource.AsyncMongoClient", _mongo_client)
 
     await _init_mongodb(resource, MongoConfig(uri=""))
     assert called["n"] == 0
@@ -132,10 +132,10 @@ async def test_init_mongodb_propagates_errors(monkeypatch) -> None:
         async def _admin_command(self, _cmd: str) -> None:
             raise RuntimeError("nope")
 
-    def _motor_client(_uri: str):
+    def _mongo_client(_uri: str):
         return _BadMongo()
 
-    monkeypatch.setattr("linglong_web.core.resource.AsyncIOMotorClient", _motor_client)
+    monkeypatch.setattr("linglong_web.core.resource.AsyncMongoClient", _mongo_client)
 
     with pytest.raises(RuntimeError, match="nope"):
         await _init_mongodb(resource, MongoConfig(uri="mongodb://x"))
@@ -147,10 +147,10 @@ async def test_init_mongodb_success_sets_client(monkeypatch) -> None:
 
     mongo = _DummyMongo()
 
-    def _motor_client(_uri: str):
+    def _mongo_client(_uri: str):
         return mongo
 
-    monkeypatch.setattr("linglong_web.core.resource.AsyncIOMotorClient", _motor_client)
+    monkeypatch.setattr("linglong_web.core.resource.AsyncMongoClient", _mongo_client)
 
     await _init_mongodb(resource, MongoConfig(uri="mongodb://x"))
     assert resource.mongo_client is mongo

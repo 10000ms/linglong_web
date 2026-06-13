@@ -1,6 +1,11 @@
 """Utilities for managing PostgreSQL schema from canonical DDL files.
 用于根据规范 DDL 文件管理 PostgreSQL 模式的实用工具。
 
+注意 / Note: 本模块是「模型 + schema diff + ddl_registry 哈希」式实现（直接用 asyncpg），
+与公开 API ``linglong_web.core.ddl_manager``（SQL 文件回放式、基于 SQLAlchemy）是两套**不同工具**，
+而非重复实现。需要 PostgreSQL extra：``pip install "linglong-web[postgres]"``。
+This is the model/diff-based variant; the SQL-replay public API lives in ``linglong_web.core.ddl_manager``.
+
 This module scans the ``ddl`` directory, groups statements by database, and
 provides helpers to ensure databases and tables exist, rebuild selected
 artifacts, and report schema drift against the canonical SQL definitions.

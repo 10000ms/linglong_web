@@ -2,7 +2,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Code Style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Linglong Web is a FastAPI toolkit for microservice scenarios, focusing on "simple startup, flexible extension, and complete observability".
 
@@ -10,9 +10,9 @@ Linglong Web is a FastAPI toolkit for microservice scenarios, focusing on "simpl
 
 ## Links
 
-- GitHub: https://github.com/victorlai/linglong-web
-- Issues: https://github.com/victorlai/linglong-web/issues
-- Changelog: https://github.com/victorlai/linglong-web/blob/master/CHANGELOG.md
+- GitHub: https://github.com/10000ms/linglong_web
+- Issues: https://github.com/10000ms/linglong_web/issues
+- Changelog: https://github.com/10000ms/linglong_web/blob/master/CHANGELOG.md
 
 ## Why this library
 
@@ -39,12 +39,25 @@ Linglong Web provides all these out of the box as modular components.
 ## Installation
 
 ```bash
+# Core: FastAPI bootstrapper + HTTP client + scheduler + Redis-backed decorators
 pip install linglong-web
+
+# Add resource backends on demand
+pip install "linglong-web[postgres]"   # PostgreSQL (asyncpg + SQLAlchemy)
+pip install "linglong-web[mongo]"      # MongoDB (PyMongo async)
+pip install "linglong-web[rabbitmq]"   # RabbitMQ (aio-pika)
+pip install "linglong-web[celery]"     # Celery
+pip install "linglong-web[all]"        # everything
 ```
+
+`import linglong_web` always works with just the core install; a backend you
+haven't installed only raises a clear error if you actually initialize it.
 
 ## Quick Start
 
 ```python
+import asyncio
+
 from linglong_web import LinglongConfigBase, init_config
 from linglong_web import build_success_response
 from linglong_web import BaseRoute, ServerRouter
@@ -68,13 +81,19 @@ router.initialize([
 
 init_config({"dev": DevConfig}, mode_name="dev")
 
-app_server = LinglongAppServer()
-await app_server.initialize(
-    service_name="demo-service",
-    router=router.get_router(),
-    config_dict={"dev": DevConfig},
-)
-await app_server.start(host="0.0.0.0", port=8080)
+
+async def main():
+    app_server = LinglongAppServer()
+    await app_server.initialize(
+        service_name="demo-service",
+        router=router.get_router(),
+        config_dict={"dev": DevConfig},
+    )
+    await app_server.start(host="0.0.0.0", port=8080)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Module Overview

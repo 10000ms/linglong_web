@@ -1,5 +1,7 @@
 """Linglong Web 资源管理器 / Resource manager."""
 
+from __future__ import annotations
+
 import asyncio
 from contextlib import asynccontextmanager
 from typing import (
@@ -8,23 +10,48 @@ from typing import (
     Dict,
 )
 
-import asyncpg
-
-import aio_pika
-from aio_pika.exceptions import AMQPConnectionError
-from aio_pika.robust_connection import RobustConnection
+# 核心依赖（始终可用）/ Core deps (always available)
 from aioclock import AioClock
-from celery import Celery
 from limits.aio.storage import RedisStorage
 from limits.aio.strategies import MovingWindowRateLimiter
-from motor.motor_asyncio import AsyncIOMotorClient
 from redis import asyncio as aioredis
-from sqlalchemy.ext.asyncio import (
-    AsyncEngine,
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+
+# 可选后端依赖：缺失时降级为 None，仅在真正使用对应能力时才友好报错。
+# Optional backend deps: degrade to None when absent; a friendly error is raised
+# only when the corresponding capability is actually used.
+try:
+    import asyncpg
+except ImportError:  # pragma: no cover - optional dependency
+    asyncpg = None
+
+try:
+    from sqlalchemy.ext.asyncio import (
+        AsyncEngine,
+        AsyncSession,
+        async_sessionmaker,
+        create_async_engine,
+    )
+except ImportError:  # pragma: no cover - optional dependency
+    AsyncEngine = AsyncSession = async_sessionmaker = create_async_engine = None
+
+try:
+    import aio_pika
+    from aio_pika.exceptions import AMQPConnectionError
+    from aio_pika.robust_connection import RobustConnection
+except ImportError:  # pragma: no cover - optional dependency
+    aio_pika = None
+    AMQPConnectionError = None
+    RobustConnection = None
+
+try:
+    from celery import Celery
+except ImportError:  # pragma: no cover - optional dependency
+    Celery = None
+
+try:
+    from pymongo import AsyncMongoClient
+except ImportError:  # pragma: no cover - optional dependency
+    AsyncMongoClient = None
 
 from ..core.constants import DEFAULT_DB_ALIAS
 from ..core.schemas import (
@@ -37,6 +64,17 @@ from ..core.schemas import (
 )
 from ..utils.log import logger
 from ..utils.pj_struct import Singleton
+
+
+def _require(dep: object, extra: str, feature: str) -> None:
+    """缺失可选依赖时给出可操作的报错。
+    Raise an actionable error when an optional backend dependency is missing.
+    """
+    if dep is None:
+        raise ImportError(
+            f"{feature} requires the '{extra}' extra. "
+            f'Install it with: pip install "linglong-web[{extra}]"'
+        )
 
 
 class ResourceManager(Singleton):
@@ -53,7 +91,7 @@ class ResourceManager(Singleton):
         self.limiter: MovingWindowRateLimiter | None = None
         self.celery_app: Celery | None = None
         self.mq_conn: RobustConnection | None = None
-        self.mongo_client: AsyncIOMotorClient | None = None
+        self.mongo_client: AsyncMongoClient | None = None
         self._initialized = True
 
     # --- Attribute aliases ----------------------------------------------------------------
@@ -114,11 +152,11 @@ class ResourceManager(Singleton):
         self.mq_conn = conn
 
     @property
-    def MongoClient(self) -> AsyncIOMotorClient | None:
+    def MongoClient(self) -> AsyncMongoClient | None:
         return self.mongo_client
 
     @MongoClient.setter
-    def MongoClient(self, client: AsyncIOMotorClient | None) -> None:
+    def MongoClient(self, client: AsyncMongoClient | None) -> None:
         self.mongo_client = client
 
     def _current_loop_id(self) -> int | None:
@@ -270,6 +308,8 @@ async def _init_pgsql(
         resource: ResourceManager,
         config: PgsqlConfig,
 ) -> None:
+    _require(asyncpg, "postgres", "PostgreSQL support")
+    _require(create_async_engine, "postgres", "PostgreSQL support")
     await _ensure_database_exists(config)
     engine_params = dict(
         url=f"postgresql+asyncpg://{config.user}:{config.password}@{config.host}:{config.port}/{config.database}",
@@ -322,6 +362,7 @@ async def _init_rabbitmq(
 ) -> None:
     if not config.host:
         return
+    _require(aio_pika, "rabbitmq", "RabbitMQ support")
     try:
         connection = await aio_pika.connect_robust(
             host=config.host,
@@ -351,9 +392,10 @@ async def _init_mongodb(resource: ResourceManager, config: MongoConfig) -> None:
     if not config.uri:
         logger.warning("MONGODB_URI is not configured, skipping MongoDB initialization.")
         return
+    _require(AsyncMongoClient, "mongo", "MongoDB support")
     try:
-        client = AsyncIOMotorClient(config.uri)
-        await client.admin.command('ismaster')
+        client = AsyncMongoClient(config.uri)
+        await client.admin.command('hello')
         resource.mongo_client = client
         logger.info("init mongodb success")
     except Exception as e:
@@ -363,7 +405,7 @@ async def _init_mongodb(resource: ResourceManager, config: MongoConfig) -> None:
 
 async def _close_mongodb(resource: ResourceManager) -> None:
     if resource.mongo_client:
-        resource.mongo_client.close()
+        await resource.mongo_client.close()
         resource.mongo_client = None
         logger.info("close mongodb success")
 
@@ -384,6 +426,7 @@ def _init_celery(
         resource: ResourceManager,
         config: CeleryConfig,
 ) -> None:
+    _require(Celery, "celery", "Celery support")
     celery_app = Celery(config.app_name, broker=config.broker_url, backend=config.backend_url)
     celery_app.conf.update(**config.config_options)
     

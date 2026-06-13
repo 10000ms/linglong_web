@@ -1,5 +1,13 @@
-"""通用 DDL 自管理模块
-Generic DDL auto-initialization utilities shared by all services.
+"""SQL 文件回放式 DDL 自管理模块（公开 API）。
+SQL-script-replay DDL auto-initialization (public API).
+
+本模块基于「目录下的 .sql 文件」做幂等建表，依赖 SQLAlchemy + ``Rmanager.pg_session()``。
+另有 ``linglong_web.utils.ddl_manager``：基于「模型 + schema diff + ddl_registry 哈希」的
+独立实现（直接用 asyncpg），定位不同、未在顶层导出——两者是有意为之的不同工具，并非重复，请勿混用。
+A separate model/diff-based implementation lives in ``linglong_web.utils.ddl_manager``;
+the two are intentionally different tools, not duplicates.
+
+需要 PostgreSQL extra：``pip install "linglong-web[postgres]"``。
 """
 import re
 from dataclasses import dataclass
@@ -13,7 +21,10 @@ from typing import (
     Tuple,
 )
 
-from sqlalchemy import text
+try:
+    from sqlalchemy import text
+except ImportError:  # pragma: no cover - optional dependency
+    text = None
 
 from .resource import Rmanager
 from linglong_web.utils import logger
@@ -66,6 +77,11 @@ class AutoDDLManager:
     """
 
     def __init__(self, config: DDLManagerConfig) -> None:
+        if text is None:
+            raise ImportError(
+                "AutoDDLManager requires the 'postgres' extra. "
+                'Install it with: pip install "linglong-web[postgres]"'
+            )
         self.config = config
         self._ddl_dir = self.config.script_path
 

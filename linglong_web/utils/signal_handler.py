@@ -1,5 +1,6 @@
 """Linglong Web 信号处理原语 / Enhanced signal handling primitives for Linglong Web."""
 import asyncio
+import inspect
 import signal
 import os
 import traceback
@@ -80,7 +81,7 @@ class SignalHandler:
 
     async def _safe_execute_callback(self, callback: Callable):
         try:
-            if asyncio.iscoroutinefunction(callback):
+            if inspect.iscoroutinefunction(callback):
                 await callback()
             else:
                 callback()
@@ -201,7 +202,7 @@ class ServiceGracefulShutdown:
         logger.info("Cleaning up resources for %s", self.service_name)
         for cleanup_func in self._cleanup_resources:
             try:
-                if asyncio.iscoroutinefunction(cleanup_func):
+                if inspect.iscoroutinefunction(cleanup_func):
                     await cleanup_func()
                 else:
                     cleanup_func()

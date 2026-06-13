@@ -9,10 +9,10 @@ Service App
     ├── ResourceManager (DB/Cache/MQ)
     ├── Scheduler (aioclock)
     ├── HTTP Client (aiohttp)
-    └── App Lifecycle Hooks (register/heartbeat/config)
+    └── Extension Hooks (on_config_ready/on_app_created/on_startup/on_shutdown)
 ```
 
-- **AppServer**：统一封装服务启动、注册、健康检查、远程配置、优雅关闭。
+- **AppServer**：统一封装服务启动、健康检查、优雅关闭；服务注册、远程配置等上层能力通过扩展钩子在业务侧实现，框架不内置。
 - **ResourceManager**：集中管理 PG/Redis/Mongo/RabbitMQ/Celery/AioClock/Limiter，提供异步上下文管理器。
 - **Config Proxy**：线程安全的配置访问层，支持批量更新、异步接口与动态热更新。
 - **Decorators**：缓存 (`cacher`)、限流 (`limiter`, `limiter_local`)、集群锁 (`cluster_lock`) 均采用 asyncio 风格实现。
@@ -40,8 +40,8 @@ Service App
 
 ## Publishing Checklist
 
-1. `pip install -e src/libs/linglong_web`
+1. `pip install -e ".[all,dev]"`（本地装齐核心 + 全部后端 + 开发依赖）。
 2. 运行 `pytest` 并确认覆盖率符合标准。
-3. 更新 `CHANGELOG.md`（可选）。
-4. `python -m build` 生成 sdist/wheel。
-5. `twine upload dist/*` 发布到 PyPI。
+3. 在 `linglong_web/__version__.py` 升级版本号，并更新 `CHANGELOG.md`。
+4. 推送代码，在 GitHub 上创建 Release（打 tag）。
+5. GitHub Actions（`.github/workflows/publish.yml`）经 PyPI Trusted Publishing 自动构建并发布，无需手动 `twine upload`。

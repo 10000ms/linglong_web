@@ -4,16 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "linglong-web"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Asynchronous FastAPI toolkit with service bootstrap, resource orchestration, and observability utilities"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
-    {name = "Victor Lai", email = "victor.lai@example.com"},
+    {name = "Victor Lai", email = "victor.lai@foxmail.com"},
 ]
 maintainers = [
-    {name = "Victor Lai", email = "victor.lai@example.com"},
+    {name = "Victor Lai", email = "victor.lai@foxmail.com"},
 ]
 keywords = [
     "fastapi",
@@ -27,7 +27,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -38,30 +37,56 @@ classifiers = [
     "Framework :: AsyncIO",
 ]
 
+# 核心依赖（始终安装）：Web 服务、HTTP 客户端、调度、限流、Redis 装饰器
+# Core deps (always installed): web server, HTTP client, scheduler, rate limiter, Redis decorators
 dependencies = [
     "fastapi>=0.115.0,<1.0.0",
     "uvicorn[standard]>=0.30.0,<1.0.0",
     "aiohttp>=3.9.0,<4.0.0",
     "aioclock>=0.3.0,<1.0.0",
     "limits>=3.0.0,<7.0.0",
-    "redis>=5.0.0,<6.0.0",
-    "aio-pika>=9.4.0,<10.0.0",
-    "celery>=5.3.0,<6.0.0",
-    "motor>=3.3.0,<4.0.0",
-    "sqlalchemy[asyncio]>=2.0.0,<3.0.0",
+    "redis>=5.0.0,<9.0.0",
     "orjson>=3.9.0,<4.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "nanoid>=2.0.0,<4.0.0",
     "yarl>=1.9.0,<2.0.0",
 ]
 
+# 资源后端按需安装 / Install resource backends on demand
+#   pip install "linglong-web[postgres]"   # PostgreSQL
+#   pip install "linglong-web[mongo]"       # MongoDB
+#   pip install "linglong-web[all]"         # 全部后端 / everything
 [project.optional-dependencies]
-redis = ["redis[hiredis]>=5.0.0,<6.0.0"]
+postgres = [
+    "asyncpg>=0.29.0,<1.0.0",
+    "sqlalchemy[asyncio]>=2.0.0,<3.0.0",
+]
+mongo = [
+    "pymongo>=4.9.0,<5.0.0",
+]
+rabbitmq = [
+    "aio-pika>=9.4.0,<10.0.0",
+]
+celery = [
+    "celery>=5.3.0,<6.0.0",
+]
+speedups = [
+    "redis[hiredis]>=5.0.0,<9.0.0",
+]
+all = [
+    "asyncpg>=0.29.0,<1.0.0",
+    "sqlalchemy[asyncio]>=2.0.0,<3.0.0",
+    "pymongo>=4.9.0,<5.0.0",
+    "aio-pika>=9.4.0,<10.0.0",
+    "celery>=5.3.0,<6.0.0",
+    "redis[hiredis]>=5.0.0,<9.0.0",
+]
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.12.0",
+    "aiosqlite>=0.19.0",
     "black>=24.0.0",
     "isort>=5.13.0",
     "mypy>=1.8.0",
@@ -74,10 +99,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/victorlai/linglong-web"
-Repository = "https://github.com/victorlai/linglong-web"
-Documentation = "https://github.com/victorlai/linglong-web/tree/main/docs"
-"Bug Tracker" = "https://github.com/victorlai/linglong-web/issues"
+Homepage = "https://github.com/10000ms/linglong_web"
+Repository = "https://github.com/10000ms/linglong_web"
+Documentation = "https://github.com/10000ms/linglong_web/tree/master/docs"
+"Bug Tracker" = "https://github.com/10000ms/linglong_web/issues"
 
 [tool.setuptools]
 zip-safe = false
@@ -85,6 +110,9 @@ packages = ["linglong_web", "linglong_web.core", "linglong_web.utils"]
 
 [tool.setuptools.package-data]
 linglong_web = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "linglong_web.__version__.__version__"}
 
 [tool.black]
 line-length = 120

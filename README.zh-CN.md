@@ -59,7 +59,7 @@ linglong_web/
 └── tests/
 ```
 
-> 📌 **运行提示**：本仓库以「src layout」组织源码，运行测试或示例前请确保 `PYTHONPATH` 包含项目根目录。
+> 📌 **运行提示**：源码就在仓库根目录的 `linglong_web/` 包内（非 src layout）。本地跑测试或示例时在仓库根目录执行即可，必要时加 `PYTHONPATH=.`。
 
 ---
 
@@ -80,9 +80,29 @@ linglong_web/
 
 ---
 
+## 📦 安装
+
+```bash
+# 核心：FastAPI 启动器 + HTTP 客户端 + 调度 + Redis 装饰器
+pip install linglong-web
+
+# 资源后端按需安装
+pip install "linglong-web[postgres]"   # PostgreSQL（asyncpg + SQLAlchemy）
+pip install "linglong-web[mongo]"      # MongoDB（PyMongo async）
+pip install "linglong-web[rabbitmq]"   # RabbitMQ（aio-pika）
+pip install "linglong-web[celery]"     # Celery
+pip install "linglong-web[all]"        # 全部后端
+```
+
+> 只装核心也能 `import linglong_web` 拿到全部 API；没装的后端只有在真正初始化时才友好报错。
+
+---
+
 ## 🚀 快速开始
 
 ```python
+import asyncio
+
 from linglong_web import LinglongConfigBase, init_config
 from linglong_web import build_success_response
 from linglong_web import BaseRoute, ServerRouter
@@ -106,13 +126,19 @@ router.initialize([
 
 init_config({"dev": DevConfig}, mode_name="dev")
 
-app_server = LinglongAppServer()
-await app_server.initialize(
-    service_name="demo-service",
-    router=router.get_router(),
-    config_dict={"dev": DevConfig},
-)
-await app_server.start(host="0.0.0.0", port=8080)
+
+async def main():
+    app_server = LinglongAppServer()
+    await app_server.initialize(
+        service_name="demo-service",
+        router=router.get_router(),
+        config_dict={"dev": DevConfig},
+    )
+    await app_server.start(host="0.0.0.0", port=8080)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ---
@@ -173,7 +199,7 @@ PYTHONPATH=. pytest tests/ -v --cov=linglong_web --cov-report=term-missing
 
 ## 🤝 贡献指南
 
-- 遵循仓库统一的代码规范：使用 `ruff`（格式化 + lint）与类型检查。
+- 遵循仓库统一的代码规范：使用 `black` + `isort`（格式化）与 `mypy`（类型检查）。
 - 关键逻辑必须提供中英双语注释，方便跨团队协作。
 - 请在提交前运行 `pytest` 并附带覆盖率报告。
 
