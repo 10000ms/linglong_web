@@ -63,3 +63,14 @@ def test_config_apply_updates_is_observed_atomically_under_concurrency():
         reader_thread.join(timeout=1.0)
 
     assert not mixed_seen
+
+
+def test_config_get_with_default():
+    """LinglongConfig.get(key, default) — dict 风格读取，缺失返回默认值，不抛异常。"""
+    LinglongConfig.reset()
+    # 存在的键返回其值 / existing key returns its value
+    assert LinglongConfig.get("SAMPLE_VALUE", "fallback") == "demo"
+    # 缺失键返回默认值（关键：不再抛 AttributeError）/ missing key returns default
+    assert LinglongConfig.get("DOES_NOT_EXIST", "fallback") == "fallback"
+    # 无默认值时返回 None / no default -> None
+    assert LinglongConfig.get("DOES_NOT_EXIST") is None

@@ -117,6 +117,25 @@ class LinglongConfigProxy(Singleton):
             self._cache_initialized = False
             self._ensure_cache_initialized()
 
+    def get(self, name: str, default: Any = None) -> Any:
+        """按名读取配置项，缺失时返回默认值（dict 风格，永不抛异常）。
+        Read a config value by name, returning ``default`` when absent (dict-like, never raises).
+
+        与 ``__getattr__`` 行为一致，但用于"取不到给默认值"的场景，避免调用方写
+        ``getattr(LinglongConfig, name, default)``。
+        Mirrors ``__getattr__`` but returns a default instead of raising AttributeError.
+        """
+        self._ensure_cache_initialized()
+        with self._lock.read_locked():
+            if name in self._config_cache:
+                return self._config_cache[name]
+        if hasattr(self._active_config_class, name):
+            value = getattr(self._active_config_class, name)
+            with self._lock.write_locked():
+                self._config_cache[name] = value
+            return value
+        return default
+
     def __getattr__(self, name: str) -> Any:
         if name.startswith('_'):
             return object.__getattribute__(self, name)

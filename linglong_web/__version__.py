@@ -1,6 +1,6 @@
 """Linglong Web metadata / 版本信息模块."""
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Victor Lai"
 __license__ = "MIT"
 __description__ = (
